@@ -20,8 +20,8 @@ class Car:
         self.rev = False
         self.angle = 0
         self.speed = 0
-        self.acc = 0.0002
-        self.max_speed = 0.03 if not self.traffic else 0.02
+        self.acc = 0.00002
+        self.max_speed = 0.05 if not self.traffic else 0.04
         self.center = [self.position[0]+CAR_SIZE_X/2, self.position[1]+CAR_SIZE_Y/2]
         self.sensors = []
         self.drawing_sensors = []
@@ -30,23 +30,13 @@ class Car:
     def draw(self, screen, x, y):
         pygame.draw.rect(screen, (100,100,200), (x, y, self.width, self.height))
 
-    def update(self, keys):
-        if keys[pygame.K_UP]:
-            if self.speed > self.max_speed * -1:
-                self.speed -= self.acc
-            else:
-                self.speed = self.max_speed * -1
-        if keys[pygame.K_DOWN]:
-            if self.speed < self.max_speed:
-                self.speed += self.acc
-            else:
-                self.speed = self.max_speed
-        if not keys[pygame.K_UP] and not keys[pygame.K_DOWN]:
-            while self.speed != 0:
-                if self.speed < 0:
-                    self.speed += self.acc
-                else:
-                    self.speed -= self.acc
+    def update(self):
+        if self.gas:
+            self.accel()
+        if self.rev:
+            self.reverse()
+        if not self.gas and not self.rev:
+            self.coast()
 
         self.y += self.speed
 
@@ -57,7 +47,7 @@ class Car:
         else:
             self.speed = self.max_speed * -1
 
-    def rev(self):
+    def reverse(self):
         if self.speed < self.max_speed:
             self.speed += self.acc
         else:
@@ -80,7 +70,21 @@ if __name__ == "__main__":
         keys = pygame.key.get_pressed()
         screen.fill((50, 50, 50))
         driver.draw(screen, driver.x, driver.y)
-        driver.update(keys)
+        driver.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    driver.gas = True
+                elif event.key == pygame.K_DOWN:
+                    driver.rev = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_UP:
+                    driver.gas = False
+                elif event.key == pygame.K_DOWN:
+                    driver.rev = False
         pygame.display.update()
 
     pygame.quit()
