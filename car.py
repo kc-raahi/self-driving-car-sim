@@ -56,6 +56,25 @@ class Car:
         self.y += self.speed
 
 
+    def accel(self):
+        if self.speed > self.max_speed * -1:
+            self.speed -= self.acc
+        else:
+            self.speed = self.max_speed * -1
+
+    def rev(self):
+        if self.speed < self.max_speed:
+            self.speed += self.acc
+        else:
+            self.speed = self.max_speed
+
+    def coast(self):
+        while self.speed != 0:
+            if self.speed < 0:
+                self.speed += self.acc
+            else:
+                self.speed -= self.acc
+
 if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
@@ -67,9 +86,14 @@ if __name__ == "__main__":
         screen.fill((50, 50, 50))
         driver.draw(screen, driver.x, driver.y)
 
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                driver.update(event)
+        if keys[pygame.K_UP]:
+            driver.accel()
+        if keys[pygame.K_DOWN]:
+            driver.rev()
+        if not keys[pygame.K_UP] and not keys[pygame.K_DOWN]:
+            driver.coast()
+
+        driver.y += driver.speed
         pygame.display.update()
         pygame.display.flip()
 
