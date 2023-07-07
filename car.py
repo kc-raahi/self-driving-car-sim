@@ -18,8 +18,8 @@ class Car:
         self.traffic = traffic
         self.angle = 0
         self.speed = 0
-        self.acc = 0.2
-        self.max_speed = 3 if not self.traffic else 2
+        self.acc = 0.0002
+        self.max_speed = 0.03 if not self.traffic else 0.02
         self.center = [self.position[0]+CAR_SIZE_X/2, self.position[1]+CAR_SIZE_Y/2]
         self.sensors = []
         self.drawing_sensors = []
