@@ -20,7 +20,7 @@ class Car:
         self.rev = False
         self.angle = 0
         self.speed = 0
-        self.acc = 0.00002
+        self.acc = 0.00005
         self.max_speed = 0.05 if not self.traffic else 0.04
         self.center = [self.position[0]+CAR_SIZE_X/2, self.position[1]+CAR_SIZE_Y/2]
         self.sensors = []
