@@ -30,6 +30,7 @@ class Car:
 
     def update(self, event):
         if event.type == pygame.KEYDOWN:
+            print("Key pressed")
             if event.key == pygame.K_UP:
                 print("Up pressed")
                 if self.speed > self.max_speed * -1:
