@@ -72,7 +72,7 @@ if __name__ == "__main__":
             if event.type == pygame.KEYDOWN:
                 driver.update(event)
         pygame.display.update()
-        pygame.display.flip()
+        #pygame.display.flip()
 
     pygame.quit()
 
