@@ -16,6 +16,8 @@ class Car:
         self.height = height
         self.position = [0, 0]
         self.traffic = traffic
+        self.gas = False
+        self.rev = False
         self.angle = 0
         self.speed = 0
         self.acc = 0.0002
@@ -28,30 +30,23 @@ class Car:
     def draw(self, screen, x, y):
         pygame.draw.rect(screen, (100,100,200), (x, y, self.width, self.height))
 
-    def update(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                print("Up pressed")
-                if self.speed > self.max_speed * -1:
-                    self.speed -= self.acc
-                else:
-                    self.speed = self.max_speed * -1
-
-            if event.key == pygame.K_DOWN:
-                print("Down pressed")
-                if self.speed < self.max_speed:
-                    self.speed += self.acc
-                else:
-                    self.speed = self.max_speed
-
-        if event.type == pygame.KEYUP:
-            print("Keystroke released")
+    def update(self, keys):
+        if keys[pygame.K_UP]:
+            if self.speed > self.max_speed * -1:
+                self.speed -= self.acc
+            else:
+                self.speed = self.max_speed * -1
+        if keys[pygame.K_DOWN]:
+            if self.speed < self.max_speed:
+                self.speed += self.acc
+            else:
+                self.speed = self.max_speed
+        if not keys[pygame.K_UP] and not keys[pygame.K_DOWN]:
             while self.speed != 0:
                 if self.speed < 0:
                     self.speed += self.acc
                 else:
                     self.speed -= self.acc
-
 
         self.y += self.speed
 
@@ -85,17 +80,8 @@ if __name__ == "__main__":
         keys = pygame.key.get_pressed()
         screen.fill((50, 50, 50))
         driver.draw(screen, driver.x, driver.y)
-
-        if keys[pygame.K_UP]:
-            driver.accel()
-        if keys[pygame.K_DOWN]:
-            driver.rev()
-        if not keys[pygame.K_UP] and not keys[pygame.K_DOWN]:
-            driver.coast()
-
-        driver.y += driver.speed
+        driver.update(keys)
         pygame.display.update()
-        pygame.display.flip()
 
     pygame.quit()
 
