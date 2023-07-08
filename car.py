@@ -100,7 +100,8 @@ class Car:
             theta = 0.03
         if self.right:
             theta = -0.03
-        self.angle += theta
+        flip = 1 if self.speed <= 0 else -1
+        self.angle += theta * flip
 
 
 if __name__ == "__main__":
