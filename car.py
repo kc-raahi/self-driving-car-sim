@@ -73,6 +73,8 @@ class Car:
         self.y += self.speed * math.cos(self.angle * RAD_TO_DEG)
         self.x += self.speed * math.sin(self.angle * RAD_TO_DEG)
         self._turn()
+        img_copy = pygame.transform.rotate(self.img, self.angle)
+        screen.blit(img_copy, (self.x - int(img_copy.get_width() / 2), self.y - int(img_copy.get_height() / 2)))
 
 
     def _accel(self):
@@ -115,13 +117,12 @@ class Road:
         self.top = INF * -1
         self.bottom = INF
 
-    def draw(self, screen):
+    def draw(self, my_screen):
         line_width = 5
         line_col = (255,255,255)    #white
         for i in range(self.lane_count+1):
             x = lerp(self.left, self.right, i / self.lane_count)
-            pygame.draw.line(screen, line_col, (x, -INF), (x, INF), width=line_width)
-            print(x)
+            pygame.draw.line(my_screen, line_col, (x, -INF), (x, INF), width=line_width)
 
 
 
@@ -129,11 +130,12 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
     driver = Car(100, 100)
+    road = Road(SCREEN_WIDTH/2, SCREEN_WIDTH*0.9)
     run = True
 
     while run:
         screen.fill((50, 50, 50))
-        driver.draw(screen)
+        road.draw(screen)
         driver.update()
 
         for event in pygame.event.get():
