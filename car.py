@@ -8,7 +8,10 @@ CAR_SIZE_Y = 50
 SCREEN_WIDTH = 200
 SCREEN_HEIGHT = 600
 RAD_TO_DEG = (2 * math.pi) / 360
-INF = math.inf
+INF = 100000
+LINE_COL = (255, 255, 255)  #white
+ROAD_COL = (50,50,50)       #dark gray
+LINE_WIDTH = 5
 
 def lerp(a, b, t): return a + (b-a) * t
 
@@ -118,11 +121,13 @@ class Road:
         self.bottom = INF
 
     def draw(self, my_screen):
-        line_width = 5
-        line_col = (255,255,255)    #white
         for i in range(self.lane_count+1):
             x = lerp(self.left, self.right, i / self.lane_count)
-            pygame.draw.line(my_screen, line_col, (x, -INF), (x, INF), width=line_width)
+            pygame.draw.line(my_screen, LINE_COL, (x, -INF), (x, INF), width=LINE_WIDTH)
+
+
+
+
 
 
 
@@ -134,7 +139,7 @@ if __name__ == "__main__":
     run = True
 
     while run:
-        screen.fill((50, 50, 50))
+        screen.fill(ROAD_COL)
         road.draw(screen)
         driver.update()
 
