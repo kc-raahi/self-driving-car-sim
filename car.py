@@ -18,6 +18,10 @@ class Car:
         self.traffic = traffic
         self.gas = False
         self.rev = False
+        self.left = False
+        self.right = False
+        self.imgname = "driver.png" if not self.traffic else "traffic.png"
+        self.img = pygame.image.load(self.imgname)
         self.angle = 0
         self.speed = 0
         self.acc = 0.00005
@@ -39,8 +43,9 @@ class Car:
         self.gas = False
         self.rev = False
 
-    def draw(self, screen, x, y):
-        pygame.draw.rect(screen, (100,100,200), (x, y, self.width, self.height))
+    def draw(self, screen):
+        screen.blit(self.img, (self.x, self.y))
+
 
     def update(self):
         if self.gas:
@@ -80,7 +85,7 @@ if __name__ == "__main__":
 
     while run:
         screen.fill((50, 50, 50))
-        driver.draw(screen, driver.x, driver.y)
+        driver.draw(screen)
         driver.update()
 
         for event in pygame.event.get():
