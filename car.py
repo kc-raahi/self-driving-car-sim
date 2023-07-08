@@ -14,7 +14,7 @@ class Car:
         self.y = y
         self.width = width
         self.height = height
-        self.position = [0, 0]
+        self.position = [self.x, self.y]
         self.traffic = traffic
         self.gas = False
         self.rev = False
@@ -22,6 +22,7 @@ class Car:
         self.right = False
         self.imgname = "driver.png" if not self.traffic else "traffic.png"
         self.img = pygame.image.load(self.imgname)
+        self.img.set_colorkey((0,0,0))
         self.angle = 0
         self.speed = 0
         self.acc = 0.00005
@@ -63,7 +64,9 @@ class Car:
         if not self.gas and not self.rev:
             self._coast()
 
+        self.position = [self.x, self.y]
         self.y += self.speed
+        self._turn()
 
 
     def _accel(self):
@@ -92,7 +95,7 @@ class Car:
         if self.right:
             theta = -0.03
         self.angle += theta
-        screen.blit(pygame.transform.rotate(self.img, theta), (self.center[0], self.center[1]))
+        screen.blit(pygame.transform.rotate(self.img, self.angle), (self.center[0], self.center[1]))
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -113,9 +116,17 @@ if __name__ == "__main__":
                     driver.forward()
                 elif event.key == pygame.K_DOWN:
                     driver.backward()
+                if event.key == pygame.K_LEFT:
+                    driver.turn_left()
+                elif event.key == pygame.K_RIGHT:
+                    driver.turn_right()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     driver.foot_off_gas()
+                if event.key == pygame.K_LEFT:
+                    driver.left = False
+                if event.key == pygame.K_RIGHT:
+                    driver.right = False
 
 
         pygame.display.update()
