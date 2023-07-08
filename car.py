@@ -1,4 +1,5 @@
 import pygame
+import math
 
 pygame.init()
 
@@ -9,11 +10,9 @@ SCREEN_HEIGHT = 600
 
 
 class Car:
-    def __init__(self, x, y, width, height, traffic=False):
+    def __init__(self, x, y, traffic=False):
         self.x = x
         self.y = y
-        self.width = width
-        self.height = height
         self.position = [self.x, self.y]
         self.traffic = traffic
         self.gas = False
@@ -23,6 +22,8 @@ class Car:
         self.imgname = "driver.png" if not self.traffic else "traffic.png"
         self.img = pygame.image.load(self.imgname)
         self.img.set_colorkey((0,0,0))
+        self.width = self.img.get_width()
+        self.height = self.img.get_height()
         self.angle = 0
         self.speed = 0
         self.acc = 0.00005
@@ -53,7 +54,8 @@ class Car:
         self.right = True
 
     def draw(self, screen):
-        screen.blit(self.img, (self.x, self.y))
+        img_copy = pygame.transform.rotate(self.img, self.angle)
+        screen.blit(img_copy, (self.x - int(img_copy.get_width()/2), self.y - int(img_copy.get_height()/2)))
 
 
     def update(self):
@@ -65,7 +67,8 @@ class Car:
             self._coast()
 
         self.position = [self.x, self.y]
-        self.y += self.speed
+        self.y += self.speed * math.cos(self.angle)
+        self.x += self.speed * math.sin(self.angle)
         self._turn()
 
 
@@ -95,12 +98,12 @@ class Car:
         if self.right:
             theta = -0.03
         self.angle += theta
-        screen.blit(pygame.transform.rotate(self.img, self.angle), (self.center[0], self.center[1]))
+
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
-    driver = Car(100, 100, CAR_SIZE_X, CAR_SIZE_Y)
+    driver = Car(100, 100)
     run = True
 
     while run:
@@ -116,9 +119,9 @@ if __name__ == "__main__":
                     driver.forward()
                 elif event.key == pygame.K_DOWN:
                     driver.backward()
-                if event.key == pygame.K_LEFT:
+                if event.key == pygame.K_LEFT and driver.speed != 0:
                     driver.turn_left()
-                elif event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT and driver.speed != 0:
                     driver.turn_right()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
