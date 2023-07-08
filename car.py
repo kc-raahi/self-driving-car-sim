@@ -43,6 +43,14 @@ class Car:
         self.gas = False
         self.rev = False
 
+    def turn_left(self):
+        self.left = True
+        self.right = False
+
+    def turn_right(self):
+        self.left = False
+        self.right = True
+
     def draw(self, screen):
         screen.blit(self.img, (self.x, self.y))
 
@@ -77,6 +85,15 @@ class Car:
             else:
                 self.speed -= self.acc
 
+    def _turn(self):
+        theta = 0
+        if self.left:
+            theta = 0.03
+        if self.right:
+            theta = -0.03
+        self.angle += theta
+        screen.blit(pygame.transform.rotate(self.img, theta), (self.center[0], self.center[1]))
+
 if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
@@ -97,7 +114,8 @@ if __name__ == "__main__":
                 elif event.key == pygame.K_DOWN:
                     driver.backward()
             elif event.type == pygame.KEYUP:
-                driver.foot_off_gas()
+                if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                    driver.foot_off_gas()
 
 
         pygame.display.update()
