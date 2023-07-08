@@ -7,8 +7,10 @@ CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
 SCREEN_WIDTH = 200
 SCREEN_HEIGHT = 600
-TO_DEG = (2*math.pi)/360
+RAD_TO_DEG = (2 * math.pi) / 360
+INF = math.inf
 
+def lerp(a, b, t): return a + (b-a) * t
 
 class Car:
     def __init__(self, x, y, traffic=False):
@@ -68,8 +70,8 @@ class Car:
             self._coast()
 
         self.position = [self.x, self.y]
-        self.y += self.speed * math.cos(self.angle*TO_DEG)
-        self.x += self.speed * math.sin(self.angle*TO_DEG)
+        self.y += self.speed * math.cos(self.angle * RAD_TO_DEG)
+        self.x += self.speed * math.sin(self.angle * RAD_TO_DEG)
         self._turn()
 
 
@@ -102,6 +104,25 @@ class Car:
             theta = -0.03
         flip = 1 if self.speed <= 0 else -1
         self.angle += theta * flip
+
+class Road:
+    def __init__(self, x, width, lane_count=3):
+        self.x = x
+        self.width = width
+        self.lane_count = lane_count
+        self.left = x-width/2
+        self.right = x+width/2
+        self.top = INF * -1
+        self.bottom = INF
+
+    def draw(self, screen):
+        line_width = 5
+        line_col = (255,255,255)    #white
+        for i in range(self.lane_count+1):
+            x = lerp(self.left, self.right, i / self.lane_count)
+            pygame.draw.line(screen, line_col, (x, -INF), (x, INF), width=line_width)
+            print(x)
+
 
 
 if __name__ == "__main__":
