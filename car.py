@@ -7,6 +7,7 @@ CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
 SCREEN_WIDTH = 200
 SCREEN_HEIGHT = 600
+TO_DEG = (2*math.pi)/360
 
 
 class Car:
@@ -67,8 +68,8 @@ class Car:
             self._coast()
 
         self.position = [self.x, self.y]
-        self.y += self.speed * math.cos(self.angle)
-        self.x += self.speed * math.sin(self.angle)
+        self.y += self.speed * math.cos(self.angle*TO_DEG)
+        self.x += self.speed * math.sin(self.angle*TO_DEG)
         self._turn()
 
 
@@ -90,6 +91,8 @@ class Car:
                 self.speed += self.acc
             else:
                 self.speed -= self.acc
+        if 0 < self.speed < math.pow(10,-4):
+            self.speed = 0
 
     def _turn(self):
         theta = 0
