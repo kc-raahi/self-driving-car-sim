@@ -130,13 +130,26 @@ class Road:
         self.bottom = INF
         self.lines = []
 
+    def set_lines(self):
+        for i in range(self.lane_count+1):
+            x = lerp(self.left, self.right, i / self.lane_count)
+            if i == 0 or i == self.lane_count:
+                height = SCREEN_HEIGHT
+                self.lines.append(Line(x,0, SCREEN_HEIGHT))
+            else:
+                height = DASH_HEIGHT
+                for j in range(0, SCREEN_HEIGHT, DASH_HEIGHT * 2):
+                    self.lines.append(Line(x, j, DASH_HEIGHT))
+
     def draw(self, my_screen):
         for i in range(self.lane_count+1):
             x = lerp(self.left, self.right, i / self.lane_count)
             if i == 0 or i == self.lane_count:
+                step = DASH_HEIGHT
                 pygame.draw.line(my_screen, LINE_COL, (x, 0), (x, SCREEN_HEIGHT), width=LINE_WIDTH)
             else:
-                for j in range(-SCREEN_HEIGHT, SCREEN_HEIGHT*2, DASH_HEIGHT*2):
+                step = DASH_HEIGHT * 2
+                for j in range(0, SCREEN_HEIGHT, DASH_HEIGHT*2):
                     self.lines.append(Line(x, j, DASH_HEIGHT))
                     pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
 
@@ -153,10 +166,10 @@ class Road:
         my_screen.fill(ROAD_COL)
         for line in self.lines:
             line.y -= car.speed
-            if line.y >= 0:
-                line.y = -600-DASH_HEIGHT
+            if line.y >= SCREEN_HEIGHT:
+                line.y = -DASH_HEIGHT
                 #print("Reset line")
-            pygame.draw.line(my_screen, LINE_COL, (line.x, line.y), (line.x, line.y+line.h), width=LINE_WIDTH)
+            #pygame.draw.line(my_screen, LINE_COL, (line.x, line.y), (line.x, line.y+line.h), width=LINE_WIDTH)
         my_screen.blit(temp, (0, -car.y+SCREEN_HEIGHT * 0.9))
 
 
