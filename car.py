@@ -12,6 +12,7 @@ INF = 100000
 LINE_COL = (255, 255, 255)  #white
 ROAD_COL = (50,50,50)       #dark gray
 LINE_WIDTH = 5
+DASH_HEIGHT = 20
 
 def lerp(a, b, t): return a + (b-a) * t
 
@@ -32,8 +33,8 @@ class Car:
         self.height = self.img.get_height()
         self.angle = 0
         self.speed = 0
-        self.acc = 0.00005
-        self.max_speed = 0.05 if not self.traffic else 0.04
+        self.acc = 0.2
+        self.max_speed = 3 if not self.traffic else 2
         self.center = [self.position[0]+CAR_SIZE_X/2, self.position[1]+CAR_SIZE_Y/2]
         self.sensors = []
         self.drawing_sensors = []
@@ -104,9 +105,9 @@ class Car:
     def _turn(self):
         theta = 0
         if self.left:
-            theta = 0.03
+            theta = 1.5
         if self.right:
-            theta = -0.03
+            theta = -1.5
         flip = 1 if self.speed <= 0 else -1
         self.angle += theta * flip
 
@@ -120,14 +121,14 @@ class Road:
         self.top = INF * -1
         self.bottom = INF
 
-    def draw(self, my_screen):
+    def draw(self, my_screen, car):
         for i in range(self.lane_count+1):
             x = lerp(self.left, self.right, i / self.lane_count)
-            pygame.draw.line(my_screen, LINE_COL, (x, -INF), (x, INF), width=LINE_WIDTH)
-
-
-
-
+            if i == 0 or i == self.lane_count:
+                pygame.draw.line(my_screen, LINE_COL, (x, -INF), (x, INF), width=LINE_WIDTH)
+            else:
+                for j in range(-INF, INF, DASH_HEIGHT*2):
+                    pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
 
 
 
@@ -137,11 +138,14 @@ if __name__ == "__main__":
     driver = Car(100, 100)
     road = Road(SCREEN_WIDTH/2, SCREEN_WIDTH*0.9)
     run = True
+    clock = pygame.time.Clock()
 
     while run:
+        clock.tick(60)
         screen.fill(ROAD_COL)
         road.draw(screen)
         driver.update()
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
