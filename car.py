@@ -161,7 +161,6 @@ class Road:
                 #print("Reset line")
             if line.y < -DASH_HEIGHT:
                 line.y = SCREEN_HEIGHT
-            #pygame.draw.line(my_screen, LINE_COL, (line.x, line.y), (line.x, line.y+line.h), width=LINE_WIDTH)
         my_screen.blit(temp, (0, -car.y+SCREEN_HEIGHT * 0.9))
 
 
