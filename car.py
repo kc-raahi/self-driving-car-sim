@@ -112,6 +112,13 @@ class Car:
         flip = 1 if self.speed <= 0 else -1
         self.angle += theta * flip
 
+class Line:
+
+    def __init__(self, x, y, h):
+        self.x = x
+        self.y = y
+        self.length = h
+
 class Road:
     def __init__(self, x, width, lane_count=3):
         self.x = x
@@ -121,6 +128,7 @@ class Road:
         self.right = x+width/2
         self.top = INF * -1
         self.bottom = INF
+        self.lines = []
 
     def draw(self, my_screen):
         for i in range(self.lane_count+1):
@@ -130,6 +138,7 @@ class Road:
             else:
                 for j in range(-SCREEN_HEIGHT, SCREEN_HEIGHT*2, DASH_HEIGHT*2):
                     pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
+                    self.lines.append(Line(x, j, DASH_HEIGHT))
 
 
     def get_lane_center(self, lane_index):
