@@ -117,7 +117,7 @@ class Line:
     def __init__(self, x, y, h):
         self.x = x
         self.y = y
-        self.length = h
+        self.h = h
 
 class Road:
     def __init__(self, x, width, lane_count=3):
@@ -134,11 +134,12 @@ class Road:
         for i in range(self.lane_count+1):
             x = lerp(self.left, self.right, i / self.lane_count)
             if i == 0 or i == self.lane_count:
-                pygame.draw.line(my_screen, LINE_COL, (x, -SCREEN_HEIGHT), (x, SCREEN_HEIGHT*2), width=LINE_WIDTH)
+                pygame.draw.line(my_screen, LINE_COL, (x, 0), (x, SCREEN_HEIGHT), width=LINE_WIDTH)
             else:
                 for j in range(-SCREEN_HEIGHT, SCREEN_HEIGHT*2, DASH_HEIGHT*2):
-                    pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
                     self.lines.append(Line(x, j, DASH_HEIGHT))
+                    pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
+
 
 
     def get_lane_center(self, lane_index):
@@ -147,10 +148,16 @@ class Road:
 
 
     #https://stackoverflow.com/questions/29582596/pygame-translate-surface-a-given-amount
-    def scroll(self, my_screen, y):
+    def scroll(self, my_screen, car):
         temp = my_screen.copy()
         my_screen.fill(ROAD_COL)
-        my_screen.blit(temp, (0, y+SCREEN_HEIGHT * 0.9))
+        for line in self.lines:
+            line.y -= car.speed
+            if line.y >= 0:
+                line.y = -600-DASH_HEIGHT
+                #print("Reset line")
+            pygame.draw.line(my_screen, LINE_COL, (line.x, line.y), (line.x, line.y+line.h), width=LINE_WIDTH)
+        my_screen.blit(temp, (0, -car.y+SCREEN_HEIGHT * 0.9))
 
 
 
@@ -166,11 +173,12 @@ if __name__ == "__main__":
         clock.tick(60)
         screen.fill(ROAD_COL)
         road.draw(screen)
+        #print(road.lines[14].y)
         driver.update()
 
         #scroll fix attempt
         scroller = driver.y % SCREEN_HEIGHT
-        road.scroll(screen, -scroller)
+        road.scroll(screen, driver)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
