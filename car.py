@@ -131,28 +131,18 @@ class Road:
         self.lines = []
 
     def set_lines(self):
-        for i in range(self.lane_count+1):
-            x = lerp(self.left, self.right, i / self.lane_count)
-            if i == 0 or i == self.lane_count:
-                height = SCREEN_HEIGHT
-                self.lines.append(Line(x,0, SCREEN_HEIGHT))
-            else:
-                height = DASH_HEIGHT
-                for j in range(0, SCREEN_HEIGHT, DASH_HEIGHT * 2):
-                    self.lines.append(Line(x, j, DASH_HEIGHT))
-
-    def draw(self, my_screen):
-        for i in range(self.lane_count+1):
+        for i in range(self.lane_count + 1):
             x = lerp(self.left, self.right, i / self.lane_count)
             if i == 0 or i == self.lane_count:
                 step = DASH_HEIGHT
-                pygame.draw.line(my_screen, LINE_COL, (x, 0), (x, SCREEN_HEIGHT), width=LINE_WIDTH)
             else:
                 step = DASH_HEIGHT * 2
-                for j in range(0, SCREEN_HEIGHT, DASH_HEIGHT*2):
-                    self.lines.append(Line(x, j, DASH_HEIGHT))
-                    pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
+            for j in range(0, SCREEN_HEIGHT, step):
+                self.lines.append(Line(x, j, DASH_HEIGHT))
 
+    def draw(self, my_screen):
+        for line in self.lines:
+            pygame.draw.line(my_screen, LINE_COL, (line.x, line.y), (line.x, line.y+DASH_HEIGHT), width=LINE_WIDTH)
 
 
     def get_lane_center(self, lane_index):
@@ -166,9 +156,11 @@ class Road:
         my_screen.fill(ROAD_COL)
         for line in self.lines:
             line.y -= car.speed
-            if line.y >= SCREEN_HEIGHT:
+            if line.y > SCREEN_HEIGHT:
                 line.y = -DASH_HEIGHT
                 #print("Reset line")
+            if line.y < -DASH_HEIGHT:
+                line.y = SCREEN_HEIGHT
             #pygame.draw.line(my_screen, LINE_COL, (line.x, line.y), (line.x, line.y+line.h), width=LINE_WIDTH)
         my_screen.blit(temp, (0, -car.y+SCREEN_HEIGHT * 0.9))
 
@@ -178,6 +170,7 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
     road = Road(SCREEN_WIDTH/2, SCREEN_WIDTH*0.9)
+    road.set_lines()
     driver = Car(road.get_lane_center(int(road.lane_count/2)), SCREEN_HEIGHT*0.9)   #int(lanes/2)+(width/lanes)
     run = True
     clock = pygame.time.Clock()
