@@ -99,8 +99,9 @@ class Car:
                 self.speed += self.acc
             else:
                 self.speed -= self.acc
-        if 0 < self.speed < math.pow(10,-4):
+        if 0 < self.speed < 0.2:
             self.speed = 0
+
 
     def _turn(self):
         theta = 0
@@ -125,15 +126,21 @@ class Road:
         for i in range(self.lane_count+1):
             x = lerp(self.left, self.right, i / self.lane_count)
             if i == 0 or i == self.lane_count:
-                pygame.draw.line(my_screen, LINE_COL, (x, -INF), (x, INF), width=LINE_WIDTH)
+                pygame.draw.line(my_screen, LINE_COL, (x, -SCREEN_HEIGHT), (x, SCREEN_HEIGHT*2), width=LINE_WIDTH)
             else:
-                for j in range(-INF, INF, DASH_HEIGHT*2):
+                for j in range(-SCREEN_HEIGHT, SCREEN_HEIGHT*2, DASH_HEIGHT*2):
                     pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
+
+
+    def get_lane_center(self, lane_index):
+        lane_width = self.width / self.lane_count
+        return self.left + lane_width / 2 + lane_index * lane_width
+
 
     def scroll(self, my_screen, y):
         temp = my_screen.copy()
         my_screen.fill(ROAD_COL)
-        my_screen.blit(temp, (0, y))
+        my_screen.blit(temp, (0, y+SCREEN_HEIGHT * 0.9))
 
 
 
@@ -141,7 +148,7 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
     road = Road(SCREEN_WIDTH/2, SCREEN_WIDTH*0.9)
-    driver = Car(road.x-1, 500)
+    driver = Car(road.get_lane_center(int(road.lane_count/2)), SCREEN_HEIGHT*0.9)   #int(lanes/2)+(width/lanes)
     run = True
     clock = pygame.time.Clock()
 
