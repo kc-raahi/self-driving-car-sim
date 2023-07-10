@@ -133,10 +133,7 @@ class Road:
     def set_lines(self):
         for i in range(self.lane_count + 1):
             x = lerp(self.left, self.right, i / self.lane_count)
-            if i == 0 or i == self.lane_count:
-                step = DASH_HEIGHT
-            else:
-                step = DASH_HEIGHT * 2
+            step = DASH_HEIGHT if i == 0 or i == self.lane_count else DASH_HEIGHT * 2
             for j in range(0, SCREEN_HEIGHT, step):
                 self.lines.append(Line(x, j, DASH_HEIGHT))
 
