@@ -137,6 +137,7 @@ class Road:
         return self.left + lane_width / 2 + lane_index * lane_width
 
 
+    #https://stackoverflow.com/questions/29582596/pygame-translate-surface-a-given-amount
     def scroll(self, my_screen, y):
         temp = my_screen.copy()
         my_screen.fill(ROAD_COL)
@@ -157,7 +158,10 @@ if __name__ == "__main__":
         screen.fill(ROAD_COL)
         road.draw(screen)
         driver.update()
-        road.scroll(screen, -driver.y)
+
+        #scroll fix attempt
+        scroller = driver.y % SCREEN_HEIGHT
+        road.scroll(screen, -scroller)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
