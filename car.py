@@ -121,7 +121,7 @@ class Road:
         self.top = INF * -1
         self.bottom = INF
 
-    def draw(self, my_screen, car):
+    def draw(self, my_screen):
         for i in range(self.lane_count+1):
             x = lerp(self.left, self.right, i / self.lane_count)
             if i == 0 or i == self.lane_count:
@@ -130,13 +130,18 @@ class Road:
                 for j in range(-INF, INF, DASH_HEIGHT*2):
                     pygame.draw.line(my_screen, LINE_COL, (x, j), (x, j+DASH_HEIGHT), width=LINE_WIDTH)
 
+    def scroll(self, my_screen, y):
+        temp = my_screen.copy()
+        my_screen.fill(ROAD_COL)
+        my_screen.blit(temp, (0, y))
+
 
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
-    driver = Car(100, 100)
     road = Road(SCREEN_WIDTH/2, SCREEN_WIDTH*0.9)
+    driver = Car(road.x-1, 500)
     run = True
     clock = pygame.time.Clock()
 
@@ -145,7 +150,7 @@ if __name__ == "__main__":
         screen.fill(ROAD_COL)
         road.draw(screen)
         driver.update()
-
+        road.scroll(screen, -driver.y)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
