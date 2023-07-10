@@ -149,7 +149,7 @@ class Road:
     #https://stackoverflow.com/questions/29582596/pygame-translate-surface-a-given-amount
     def scroll(self, my_screen, y):
         temp = my_screen.copy()
-        self.draw(temp)
+        my_screen.fill(ROAD_COL)
         my_screen.blit(temp, (0, y+SCREEN_HEIGHT * 0.9))
 
 
