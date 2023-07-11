@@ -129,7 +129,9 @@ class Road:
         self.bottom = INF
         self.lines = []
 
+    # print the road in relation to the car
     def move_viewport(self, car_y):
+        # where we want the top of the screen
         new_y = car_y - 0.9 * SCREEN_HEIGHT
         delta = new_y - self.y
         for line in self.lines:
