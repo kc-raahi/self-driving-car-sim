@@ -14,7 +14,8 @@ LINE_WIDTH = 5
 DASH_HEIGHT = 20
 
 
-def lerp(a, b, t): return a + (b - a) * t
+def lerp(a, b, t):
+    return a + (b - a) * t
 
 
 class Car:
