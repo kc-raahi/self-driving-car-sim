@@ -7,7 +7,14 @@ CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
 SCREEN_WIDTH = 200
 SCREEN_HEIGHT = 600
-TO_DEG = (2*math.pi)/360
+DEG_TO_RAD = (2 * math.pi) / 360
+LINE_COL = (255, 255, 255)  # white
+ROAD_COL = (50, 50, 50)  # dark gray
+LINE_WIDTH = 5
+DASH_HEIGHT = 20
+
+
+def lerp(a, b, t): return a + (b - a) * t
 
 
 class Car:
@@ -16,35 +23,35 @@ class Car:
         self.y = y
         self.position = [self.x, self.y]
         self.traffic = traffic
-        self.gas = False
-        self.rev = False
+        self.up = False
+        self.down = False
         self.left = False
         self.right = False
         self.imgname = "driver.png" if not self.traffic else "traffic.png"
         self.img = pygame.image.load(self.imgname)
-        self.img.set_colorkey((0,0,0))
+        self.img.set_colorkey((0, 0, 0))
         self.width = self.img.get_width()
         self.height = self.img.get_height()
         self.angle = 0
         self.speed = 0
-        self.acc = 0.00005
-        self.max_speed = 0.05 if not self.traffic else 0.04
-        self.center = [self.position[0]+CAR_SIZE_X/2, self.position[1]+CAR_SIZE_Y/2]
+        self.acc = 0.2
+        self.max_speed = 3 if not self.traffic else 2
+        self.center = [self.position[0] + CAR_SIZE_X / 2, self.position[1] + CAR_SIZE_Y / 2]
         self.sensors = []
         self.drawing_sensors = []
         self.alive = True
 
     def forward(self):
-        self.gas = True
-        self.rev = False
+        self.up = True
+        self.down = False
 
     def backward(self):
-        self.gas = False
-        self.rev = True
+        self.up = False
+        self.down = True
 
     def foot_off_gas(self):
-        self.gas = False
-        self.rev = False
+        self.up = False
+        self.down = False
 
     def turn_left(self):
         self.left = True
@@ -54,24 +61,21 @@ class Car:
         self.left = False
         self.right = True
 
-    def draw(self, screen):
-        img_copy = pygame.transform.rotate(self.img, self.angle)
-        screen.blit(img_copy, (self.x - int(img_copy.get_width()/2), self.y - int(img_copy.get_height()/2)))
-
-
-    def update(self):
-        if self.gas:
+    def update_and_draw(self, my_road):
+        if self.up:
             self._accel()
-        if self.rev:
+        if self.down:
             self._reverse()
-        if not self.gas and not self.rev:
+        if not self.up and not self.down:
             self._coast()
 
         self.position = [self.x, self.y]
-        self.y += self.speed * math.cos(self.angle*TO_DEG)
-        self.x += self.speed * math.sin(self.angle*TO_DEG)
+        self.y += self.speed * math.cos(self.angle * DEG_TO_RAD)
+        self.x += self.speed * math.sin(self.angle * DEG_TO_RAD)
         self._turn()
-
+        img_copy = pygame.transform.rotate(self.img, self.angle)
+        y = self.y - my_road.y
+        screen.blit(img_copy, (self.x - int(img_copy.get_width() / 2), y - int(img_copy.get_height() / 2)))
 
     def _accel(self):
         if self.speed > self.max_speed * -1:
@@ -91,29 +95,84 @@ class Car:
                 self.speed += self.acc
             else:
                 self.speed -= self.acc
-        if 0 < self.speed < math.pow(10,-4):
+        if 0 < self.speed < 0.2:
             self.speed = 0
 
     def _turn(self):
         theta = 0
         if self.left:
-            theta = 0.03
+            theta = 1.5
         if self.right:
-            theta = -0.03
+            theta = -1.5
         flip = 1 if self.speed <= 0 else -1
         self.angle += theta * flip
+
+
+class Line:
+    def __init__(self, x, y, h):
+        self.x = x
+        self.y = y
+        self.h = h
+
+
+class Road:
+    def __init__(self, x, width, lane_count=3):
+        self.x = x
+        self.y = 0
+        self.width = width
+        self.lane_count = lane_count
+        self.left = x - width / 2
+        self.right = x + width / 2
+        self.lines = []
+
+    # print the road in relation to the car
+    def move_viewport(self, car_y):
+        # where we want the top of the screen
+        new_y = car_y - 0.9 * SCREEN_HEIGHT
+        delta = new_y - self.y
+        for line in self.lines:
+            line_y_new = line.y - delta
+            # keeps line within viewport
+            if line_y_new < new_y:
+                line_y_new = new_y + SCREEN_HEIGHT - (new_y - line_y_new)
+            if line_y_new > new_y + SCREEN_HEIGHT:
+                line_y_new = line_y_new - SCREEN_HEIGHT
+            line.y = line_y_new
+        self.y = new_y
+
+    def set_lines(self):
+        for i in range(self.lane_count + 1):
+            x = lerp(self.left, self.right, i / self.lane_count)
+            step = DASH_HEIGHT if i == 0 or i == self.lane_count else DASH_HEIGHT * 2
+            for j in range(int(self.y), int(self.y) + SCREEN_HEIGHT, step):
+                self.lines.append(Line(x, j, DASH_HEIGHT))
+
+    def draw(self, my_screen):
+        for line in self.lines:
+            line_v_y = line.y - self.y
+            pygame.draw.line(my_screen, LINE_COL, (line.x, line_v_y), (line.x, line_v_y + DASH_HEIGHT),
+                             width=LINE_WIDTH)
+
+    def get_lane_center(self, lane_index):
+        lane_width = self.width / self.lane_count
+        return self.left + lane_width / 2 + lane_index * lane_width
 
 
 if __name__ == "__main__":
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Self-Driving Car")
-    driver = Car(100, 100)
+    road = Road(SCREEN_WIDTH / 2, SCREEN_WIDTH * 0.9)
+    road.set_lines()
+    driver = Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9)  # int(lanes/2)+(width/lanes)
     run = True
+    clock = pygame.time.Clock()
 
     while run:
-        screen.fill((50, 50, 50))
-        driver.draw(screen)
-        driver.update()
+        clock.tick(60)
+        screen.fill(ROAD_COL)
+        road.move_viewport(driver.y)
+        road.draw(screen)
+        driver.update_and_draw(road)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -135,9 +194,6 @@ if __name__ == "__main__":
                 if event.key == pygame.K_RIGHT:
                     driver.right = False
 
-
         pygame.display.update()
 
     pygame.quit()
-
-
