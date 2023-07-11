@@ -7,8 +7,7 @@ CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
 SCREEN_WIDTH = 200
 SCREEN_HEIGHT = 600
-RAD_TO_DEG = (2 * math.pi) / 360
-INF = 100000
+DEG_TO_RAD = (2 * math.pi) / 360
 LINE_COL = (255, 255, 255)  # white
 ROAD_COL = (50, 50, 50)  # dark gray
 LINE_WIDTH = 5
@@ -24,8 +23,8 @@ class Car:
         self.y = y
         self.position = [self.x, self.y]
         self.traffic = traffic
-        self.gas = False
-        self.rev = False
+        self.up = False
+        self.down = False
         self.left = False
         self.right = False
         self.imgname = "driver.png" if not self.traffic else "traffic.png"
@@ -43,16 +42,16 @@ class Car:
         self.alive = True
 
     def forward(self):
-        self.gas = True
-        self.rev = False
+        self.up = True
+        self.down = False
 
     def backward(self):
-        self.gas = False
-        self.rev = True
+        self.up = False
+        self.down = True
 
     def foot_off_gas(self):
-        self.gas = False
-        self.rev = False
+        self.up = False
+        self.down = False
 
     def turn_left(self):
         self.left = True
@@ -63,16 +62,16 @@ class Car:
         self.right = True
 
     def update_and_draw(self, my_road):
-        if self.gas:
+        if self.up:
             self._accel()
-        if self.rev:
+        if self.down:
             self._reverse()
-        if not self.gas and not self.rev:
+        if not self.up and not self.down:
             self._coast()
 
         self.position = [self.x, self.y]
-        self.y += self.speed * math.cos(self.angle * RAD_TO_DEG)
-        self.x += self.speed * math.sin(self.angle * RAD_TO_DEG)
+        self.y += self.speed * math.cos(self.angle * DEG_TO_RAD)
+        self.x += self.speed * math.sin(self.angle * DEG_TO_RAD)
         self._turn()
         img_copy = pygame.transform.rotate(self.img, self.angle)
         y = self.y - my_road.y
@@ -110,7 +109,6 @@ class Car:
 
 
 class Line:
-
     def __init__(self, x, y, h):
         self.x = x
         self.y = y
@@ -125,8 +123,6 @@ class Road:
         self.lane_count = lane_count
         self.left = x - width / 2
         self.right = x + width / 2
-        self.top = INF * -1
-        self.bottom = INF
         self.lines = []
 
     # print the road in relation to the car
@@ -160,12 +156,6 @@ class Road:
     def get_lane_center(self, lane_index):
         lane_width = self.width / self.lane_count
         return self.left + lane_width / 2 + lane_index * lane_width
-
-    # https://stackoverflow.com/questions/29582596/pygame-translate-surface-a-given-amount
-    def scroll(self, my_screen, car):
-        temp = my_screen.copy()
-        my_screen.fill(ROAD_COL)
-        my_screen.blit(temp, (0, -car.y + SCREEN_HEIGHT * 0.9))
 
 
 if __name__ == "__main__":
