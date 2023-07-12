@@ -8,8 +8,10 @@ CAR_SIZE_Y = 50
 SCREEN_WIDTH = 200
 SCREEN_HEIGHT = 600
 DEG_TO_RAD = (2 * math.pi) / 360
-LINE_COL = (255, 255, 255)  # white
-ROAD_COL = (50, 50, 50)  # dark gray
+LINE_COL = (255, 255, 255)          # white
+ROAD_COL = (50, 50, 50)             # dark gray
+SENSOR_COL = (200, 200, 0)          # yellow
+SENSOR_ACTIVE_COL = (255, 0, 0)     # bright red
 LINE_WIDTH = 5
 DASH_HEIGHT = 20
 
@@ -37,7 +39,7 @@ class Car:
         self.speed = 0
         self.acc = 0.2
         self.max_speed = 3 if not self.traffic else 2
-        self.center = [self.position[0] + CAR_SIZE_X / 2, self.position[1] + CAR_SIZE_Y / 2]
+        self.center = (self.x + CAR_SIZE_X / 2, self.y + CAR_SIZE_Y / 2)
         self.sensors = []
         self.drawing_sensors = []
         self.alive = True
@@ -115,6 +117,25 @@ class Line:
         self.y = y
         self.h = h
 
+class Sensor:
+
+    def __init__(self, car, num_rays=4, ray_len=100, ray_spread=math.pi/2):
+        self.car = car
+        self.num_rays = num_rays
+        self.ray_len = ray_len
+        self.ray_spread = ray_spread
+        self.rays = []
+
+    def update_and_draw(self, car, my_screen, my_road):
+        self.rays = []
+        y = car.y - my_road.y
+        for i in range(self.num_rays):
+            ray_angle = lerp(self.ray_spread / 2, -self.ray_spread / 2, i / (self.num_rays - 1)) + car.angle * DEG_TO_RAD
+            a = (car.x, y)
+            b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
+            self.rays.append([a, b])
+            pygame.draw.line(my_screen, SENSOR_COL, a, b, width=2)
+
 
 class Road:
     def __init__(self, x, width, lane_count=3):
@@ -165,6 +186,7 @@ if __name__ == "__main__":
     road = Road(SCREEN_WIDTH / 2, SCREEN_WIDTH * 0.9)
     road.set_lines()
     driver = Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9)  # int(lanes/2)+(width/lanes)
+    sensor = Sensor(driver)
     run = True
     clock = pygame.time.Clock()
 
@@ -174,6 +196,7 @@ if __name__ == "__main__":
         road.move_viewport(driver.y)
         road.draw(screen)
         driver.update_and_draw(road)
+        sensor.update_and_draw(driver, screen, road)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
