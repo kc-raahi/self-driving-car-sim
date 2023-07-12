@@ -20,6 +20,20 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
+def get_intersection(ray, length, angle, traffic):
+    if ray[1][0] < 0 or ray[1][0] > SCREEN_WIDTH:
+        return True
+
+    for i in range(length):
+        for car in traffic:
+            x_check = car.x - CAR_SIZE_X / 2 <= ray[0][0] + i * math.sin(angle) <= car.x + CAR_SIZE_X / 2
+            y_check = car.y - CAR_SIZE_Y / 2 <= ray[0][1] + i * math.cos(angle) <= car.y + CAR_SIZE_Y / 2
+            if x_check and y_check:
+                return True
+
+    return False
+
+
 class Car:
     def __init__(self, x, y, traffic=False):
         self.x = x
@@ -117,6 +131,7 @@ class Line:
         self.y = y
         self.h = h
 
+
 class Sensor:
 
     def __init__(self, car, num_rays=4, ray_len=100, ray_spread=math.pi/2):
@@ -130,11 +145,14 @@ class Sensor:
         self.rays = []
         y = car.y - my_road.y
         for i in range(self.num_rays):
-            ray_angle = lerp(self.ray_spread / 2, -self.ray_spread / 2, i / (self.num_rays - 1)) + car.angle * DEG_TO_RAD
+            ray_angle = lerp(self.ray_spread / 2, -self.ray_spread / 2, i / (self.num_rays - 1)) + car.angle * \
+                        DEG_TO_RAD
             a = (car.x, y)
             b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
-            self.rays.append([a, b])
-            pygame.draw.line(my_screen, SENSOR_COL, a, b, width=2)
+            self.rays.append((a, b))
+            col = SENSOR_COL if not get_intersection(self.rays[i], self.ray_len, ray_angle, my_road.traffic) \
+                else SENSOR_ACTIVE_COL
+            pygame.draw.line(my_screen, col, a, b, width=2)
 
 
 class Road:
@@ -146,6 +164,7 @@ class Road:
         self.left = x - width / 2
         self.right = x + width / 2
         self.lines = []
+        self.traffic = []
 
     # print the road in relation to the car
     def move_viewport(self, car_y):
