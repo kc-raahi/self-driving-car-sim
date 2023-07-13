@@ -20,14 +20,15 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def get_intersection(ray, length, angle, traffic):
+def get_intersection(ray, length, angle, my_driver, my_traffic):
     if ray[1][0] < 0 or ray[1][0] > SCREEN_WIDTH:
         return True
-
     for i in range(length):
-        for car in traffic:
-            x_check = car.x - CAR_SIZE_X / 2 <= ray[0][0] + i * math.sin(angle) <= car.x + CAR_SIZE_X / 2
-            y_check = car.y - CAR_SIZE_Y / 2 <= ray[0][1] + i * math.cos(angle) <= car.y + CAR_SIZE_Y / 2
+        for t in my_traffic:
+            ray_point_x = my_driver.x - i * math.sin(angle)
+            ray_point_y = my_driver.y - i * math.cos(angle)
+            x_check = t.x - CAR_SIZE_X / 2 <= ray_point_x <= t.x + CAR_SIZE_X / 2
+            y_check = t.y - CAR_SIZE_Y / 2 <= ray_point_y <= t.y + CAR_SIZE_Y / 2
             if x_check and y_check:
                 return True
 
@@ -150,7 +151,7 @@ class Sensor:
             a = (car.x, y)
             b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
             self.rays.append((a, b))
-            col = SENSOR_COL if not get_intersection(self.rays[i], self.ray_len, ray_angle, my_road.traffic) \
+            col = SENSOR_COL if not get_intersection(self.rays[i], self.ray_len, ray_angle, car, my_road.traffic) \
                 else SENSOR_ACTIVE_COL
             pygame.draw.line(my_screen, col, a, b, width=2)
 
@@ -205,6 +206,8 @@ if __name__ == "__main__":
     road = Road(SCREEN_WIDTH / 2, SCREEN_WIDTH * 0.9)
     road.set_lines()
     driver = Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9)  # int(lanes/2)+(width/lanes)
+    t = Car(road.get_lane_center(0), 480, traffic=True)
+    road.traffic.append(t)
     sensor = Sensor(driver)
     run = True
     clock = pygame.time.Clock()
@@ -215,6 +218,7 @@ if __name__ == "__main__":
         road.move_viewport(driver.y)
         road.draw(screen)
         driver.update_and_draw(road)
+        t.update_and_draw(road)
         sensor.update_and_draw(driver, screen, road)
 
         for event in pygame.event.get():
