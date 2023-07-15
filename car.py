@@ -8,10 +8,10 @@ CAR_SIZE_Y = 50
 SCREEN_WIDTH = 200
 SCREEN_HEIGHT = 600
 DEG_TO_RAD = (2 * math.pi) / 360
-LINE_COL = (255, 255, 255)          # white
-ROAD_COL = (50, 50, 50)             # dark gray
-SENSOR_COL = (200, 200, 0)          # yellow
-SENSOR_ACTIVE_COL = (255, 0, 0)     # bright red
+LINE_COL = (255, 255, 255)  # white
+ROAD_COL = (50, 50, 50)  # dark gray
+SENSOR_COL = (200, 200, 0)  # yellow
+SENSOR_ACTIVE_COL = (255, 0, 0)  # bright red
 LINE_WIDTH = 5
 DASH_HEIGHT = 20
 
@@ -24,11 +24,11 @@ def get_intersection(ray, length, angle, my_driver, my_traffic):
     if ray[1][0] < 0 or ray[1][0] > SCREEN_WIDTH:
         return True
     for i in range(length):
-        for t in my_traffic:
+        for car in my_traffic:
             ray_point_x = my_driver.x - i * math.sin(angle)
             ray_point_y = my_driver.y - i * math.cos(angle)
-            x_check = t.x - CAR_SIZE_X / 2 <= ray_point_x <= t.x + CAR_SIZE_X / 2
-            y_check = t.y - CAR_SIZE_Y / 2 <= ray_point_y <= t.y + CAR_SIZE_Y / 2
+            x_check = car.x - CAR_SIZE_X / 2 <= ray_point_x <= car.x + CAR_SIZE_X / 2
+            y_check = car.y - CAR_SIZE_Y / 2 <= ray_point_y <= car.y + CAR_SIZE_Y / 2
             if x_check and y_check:
                 return True
 
@@ -135,24 +135,27 @@ class Line:
 
 class Sensor:
 
-    def __init__(self, car, num_rays=4, ray_len=100, ray_spread=math.pi/2):
+    def __init__(self, car, num_rays=4, ray_len=100, ray_spread=math.pi / 2):
         self.car = car
         self.num_rays = num_rays
         self.ray_len = ray_len
         self.ray_spread = ray_spread
         self.rays = []
+        self.intersections = []
 
     def update_and_draw(self, car, my_screen, my_road):
         self.rays = []
         y = car.y - my_road.y
         for i in range(self.num_rays):
+            self.intersections.append(False)
             ray_angle = lerp(self.ray_spread / 2, -self.ray_spread / 2, i / (self.num_rays - 1)) + car.angle * \
                         DEG_TO_RAD
             a = (car.x, y)
             b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
             self.rays.append((a, b))
-            col = SENSOR_COL if not get_intersection(self.rays[i], self.ray_len, ray_angle, car, my_road.traffic) \
-                else SENSOR_ACTIVE_COL
+            self.intersections[i] = get_intersection(self.rays[i], self.ray_len, ray_angle, car, my_road.traffic)
+
+            col = SENSOR_COL if not self.intersections[i] else SENSOR_ACTIVE_COL
             pygame.draw.line(my_screen, col, a, b, width=2)
 
 
