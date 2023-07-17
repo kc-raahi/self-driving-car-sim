@@ -14,6 +14,8 @@ SENSOR_COL = (200, 200, 0)  # yellow
 SENSOR_ACTIVE_COL = (255, 0, 0)  # bright red
 LINE_WIDTH = 5
 DASH_HEIGHT = 20
+DRIVER_COL = (0, 0, 200)
+TRAFFIC_COL = (0, 200, 0)
 
 
 def lerp(a, b, t):
