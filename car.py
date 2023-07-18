@@ -14,15 +14,15 @@ SENSOR_COL = (200, 200, 0)  # yellow
 SENSOR_ACTIVE_COL = (255, 0, 0)  # bright red
 LINE_WIDTH = 5
 DASH_HEIGHT = 20
-DRIVER_COL = (0, 0, 200)
-TRAFFIC_COL = (0, 200, 0)
+DRIVER_COL = (100, 100, 200)
+TRAFFIC_COL = (100, 200, 100)
 
 
 def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def get_intersection(ray, length, angle, my_driver, my_traffic):
+def get_ray_intersection(ray, length, angle, my_driver, my_traffic):
     if ray[1][0] < 0 or ray[1][0] > SCREEN_WIDTH:
         return True
     for i in range(length):
@@ -47,12 +47,9 @@ class Car:
         self.down = False
         self.left = False
         self.right = False
-        self.imgname = "driver.png" if not self.traffic else "traffic.png"
-        self.img = pygame.image.load(self.imgname)
-        self.img.set_colorkey((0, 0, 0))
-        self.width = self.img.get_width()
-        self.height = self.img.get_height()
-        self.angle = 0
+        self.width = CAR_SIZE_X
+        self.height = CAR_SIZE_Y
+        self.angle = 0  # degrees
         self.speed = 0
         self.acc = 0.2
         self.max_speed = 3 if not self.traffic else 2
@@ -60,20 +57,21 @@ class Car:
         self.sensors = []
         self.drawing_sensors = []
         self.alive = True
+        self.corners = []
 
     # retrieve the corners of the car, in list of tuples form
-    def get_polygon(self):
-        points = []
+    def get_polygon(self, y_adj):
+        self.corners = []
         rad = math.hypot(self.width, self.height) / 2
         alpha = math.atan2(self.width, self.height)
-        points.append((self.x - math.sin(self.angle - alpha) * rad, self.y - math.cos(self.angle - alpha) * rad))
-        points.append((self.x - math.sin(self.angle + alpha) * rad, self.y - math.cos(self.angle + alpha) * rad))
-        points.append((self.x - math.sin(math.pi + self.angle - alpha) * rad, self.y - math.cos(self.angle - alpha) *
-                       rad))
-        points.append((self.x - math.sin(math.pi + self.angle + alpha) * rad, self.y - math.cos(self.angle + alpha) *
-                       rad))
-
-        return points
+        self.corners.append((self.x - math.sin(DEG_TO_RAD * self.angle - alpha) * rad,
+                             y_adj - math.cos(DEG_TO_RAD * self.angle - alpha) * rad))
+        self.corners.append((self.x - math.sin(DEG_TO_RAD * self.angle + alpha) * rad,
+                             y_adj - math.cos(DEG_TO_RAD * self.angle + alpha) * rad))
+        self.corners.append((self.x - math.sin(math.pi + DEG_TO_RAD * self.angle - alpha) * rad,
+                             y_adj - math.cos(math.pi + DEG_TO_RAD * self.angle - alpha) * rad))
+        self.corners.append((self.x - math.sin(math.pi + DEG_TO_RAD * self.angle + alpha) * rad,
+                             y_adj - math.cos(math.pi + DEG_TO_RAD * self.angle + alpha) * rad))
 
     def forward(self):
         self.up = True
@@ -95,7 +93,7 @@ class Car:
         self.left = False
         self.right = True
 
-    def update_and_draw(self, my_road):
+    def update_and_draw(self, my_road, my_screen):
         if self.up:
             self._accel()
         if self.down:
@@ -107,9 +105,10 @@ class Car:
         self.y += self.speed * math.cos(self.angle * DEG_TO_RAD)
         self.x += self.speed * math.sin(self.angle * DEG_TO_RAD)
         self._turn()
-        img_copy = pygame.transform.rotate(self.img, self.angle)
         y = self.y - my_road.y
-        screen.blit(img_copy, (self.x - int(img_copy.get_width() / 2), y - int(img_copy.get_height() / 2)))
+        col = DRIVER_COL if not self.traffic else TRAFFIC_COL
+        self.get_polygon(y)
+        pygame.draw.polygon(my_screen, col, self.corners)
 
     def _accel(self):
         if self.speed > self.max_speed * -1:
@@ -169,7 +168,7 @@ class Sensor:
             a = (car.x, y)
             b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
             self.rays.append((a, b))
-            self.intersections[i] = get_intersection(self.rays[i], self.ray_len, ray_angle, car, my_road.traffic)
+            self.intersections[i] = get_ray_intersection(self.rays[i], self.ray_len, ray_angle, car, my_road.traffic)
 
             col = SENSOR_COL if not self.intersections[i] else SENSOR_ACTIVE_COL
             pygame.draw.line(my_screen, col, a, b, width=2)
@@ -225,7 +224,7 @@ if __name__ == "__main__":
     road = Road(SCREEN_WIDTH / 2, SCREEN_WIDTH * 0.9)
     road.set_lines()
     driver = Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9)  # int(lanes/2)+(width/lanes)
-    t = Car(road.get_lane_center(0), 480, traffic=True)
+    t = Car(road.get_lane_center(0), 100, traffic=True)
     road.traffic.append(t)
     sensor = Sensor(driver)
     run = True
@@ -236,8 +235,8 @@ if __name__ == "__main__":
         screen.fill(ROAD_COL)
         road.move_viewport(driver.y)
         road.draw(screen)
-        driver.update_and_draw(road)
-        t.update_and_draw(road)
+        driver.update_and_draw(road, screen)
+        t.update_and_draw(road, screen)
         sensor.update_and_draw(driver, screen, road)
 
         for event in pygame.event.get():
