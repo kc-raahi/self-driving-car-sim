@@ -61,12 +61,19 @@ class Car:
         self.drawing_sensors = []
         self.alive = True
 
-    # retrieve the corners of the car
+    # retrieve the corners of the car, in list of tuples form
     def get_polygon(self):
         points = []
         rad = math.hypot(self.width, self.height) / 2
         alpha = math.atan2(self.width, self.height)
         points.append((self.x - math.sin(self.angle - alpha) * rad, self.y - math.cos(self.angle - alpha) * rad))
+        points.append((self.x - math.sin(self.angle + alpha) * rad, self.y - math.cos(self.angle + alpha) * rad))
+        points.append((self.x - math.sin(math.pi + self.angle - alpha) * rad, self.y - math.cos(self.angle - alpha) *
+                       rad))
+        points.append((self.x - math.sin(math.pi + self.angle + alpha) * rad, self.y - math.cos(self.angle + alpha) *
+                       rad))
+
+        return points
 
     def forward(self):
         self.up = True
