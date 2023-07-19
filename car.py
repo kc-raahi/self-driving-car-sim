@@ -36,6 +36,30 @@ def get_ray_intersection(ray, length, angle, my_driver, my_traffic):
 
     return False
 
+# 0: x; 1: y
+def get_sides_intersection(a, b, c, d):
+    t_top = (d[0] - c[0]) * (a[1] - c[1]) - (d[1] - c[1]) * (a[0] - c[0])
+    u_top = (c[1] - a[1]) * (a[0] - b[0]) - (c[0] - a[0]) * (a[1] - b[1])
+    bottom = (d[1] - c[1]) * (b[0] - a[0]) - (d[0] - c[0]) * (b[1] - a[1])
+
+    if bottom != 0:
+        t = t_top / bottom
+        u = u_top / bottom
+        if 0 <= t <= 1 and 0 <= u <= 1:
+            return lerp(a[0], b[0], t), lerp(a[1], b[1], t), t
+
+    return None
+
+
+def car_intersection(poly1, poly2):
+    for i in range(len(poly1)):
+        for j in range(len(poly2)):
+            touch = get_sides_intersection(poly1[i], poly1[(i + 1) % len(poly1)], poly2[j], poly2[(j + 1) % len(poly2)])
+            if touch is not None:
+                return True
+
+    return False
+
 
 class Car:
     def __init__(self, x, y, traffic=False):
@@ -72,6 +96,16 @@ class Car:
                              y_adj - math.cos(math.pi + DEG_TO_RAD * self.angle - alpha) * rad))
         self.corners.append((self.x - math.sin(math.pi + DEG_TO_RAD * self.angle + alpha) * rad,
                              y_adj - math.cos(math.pi + DEG_TO_RAD * self.angle + alpha) * rad))
+
+    # check if the car has hit another car or offroaded
+    def assess_damage(self, my_road):
+        for pt in self.corners:
+            if pt[0] < 0 or pt[0] > SCREEN_WIDTH:
+                self.alive = False
+
+        for car in my_road.traffic:
+            if car_intersection(self.corners, car.corners):
+                self.alive = False
 
     def forward(self):
         self.up = True
