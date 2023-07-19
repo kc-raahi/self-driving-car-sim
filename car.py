@@ -15,6 +15,7 @@ SENSOR_ACTIVE_COL = (255, 0, 0)  # bright red
 LINE_WIDTH = 5
 DASH_HEIGHT = 20
 DRIVER_COL = (100, 100, 200)
+DRIVER_DAMAGED_COL = (150, 150, 200)
 TRAFFIC_COL = (100, 200, 100)
 
 
@@ -35,6 +36,7 @@ def get_ray_intersection(ray, length, angle, my_driver, my_traffic):
                 return True
 
     return False
+
 
 # 0: x; 1: y
 def get_sides_intersection(a, b, c, d):
@@ -101,11 +103,12 @@ class Car:
     def assess_damage(self, my_road):
         for pt in self.corners:
             if pt[0] < 0 or pt[0] > SCREEN_WIDTH:
-                self.alive = False
+                return False
 
         for car in my_road.traffic:
             if car_intersection(self.corners, car.corners):
-                self.alive = False
+                return False
+        return True
 
     def forward(self):
         self.up = True
@@ -128,20 +131,30 @@ class Car:
         self.right = True
 
     def update_and_draw(self, my_road, my_screen):
-        if self.up:
-            self._accel()
-        if self.down:
-            self._reverse()
-        if not self.up and not self.down:
-            self._coast()
+        if self.alive:
+            if self.up:
+                self._accel()
+            if self.down:
+                self._reverse()
+            if not self.up and not self.down:
+                self._coast()
 
-        self.position = [self.x, self.y]
-        self.y += self.speed * math.cos(self.angle * DEG_TO_RAD)
-        self.x += self.speed * math.sin(self.angle * DEG_TO_RAD)
-        self._turn()
-        y = self.y - my_road.y
-        col = DRIVER_COL if not self.traffic else TRAFFIC_COL
-        self.get_polygon(y)
+            self.position = [self.x, self.y]
+            self.y += self.speed * math.cos(self.angle * DEG_TO_RAD)
+            self.x += self.speed * math.sin(self.angle * DEG_TO_RAD)
+            self._turn()
+            y = self.y - my_road.y
+            self.get_polygon(y)
+
+        col = (0, 0, 0)
+        if self.traffic:
+            col = TRAFFIC_COL
+        else:
+            if self.alive:
+                col = DRIVER_COL
+            else:
+                col = DRIVER_DAMAGED_COL
+
         pygame.draw.polygon(my_screen, col, self.corners)
 
     def _accel(self):
@@ -270,6 +283,7 @@ if __name__ == "__main__":
         road.move_viewport(driver.y)
         road.draw(screen)
         driver.update_and_draw(road, screen)
+        driver.alive = driver.assess_damage(road)
         t.update_and_draw(road, screen)
         sensor.update_and_draw(driver, screen, road)
 
