@@ -39,6 +39,7 @@ def get_ray_intersection(ray, length, angle, my_driver, my_traffic):
 
 
 # 0: x; 1: y
+# checks the sides of the two cars for any intersections
 def get_sides_intersection(a, b, c, d):
     t_top = (d[0] - c[0]) * (a[1] - c[1]) - (d[1] - c[1]) * (a[0] - c[0])
     u_top = (c[1] - a[1]) * (a[0] - b[0]) - (c[0] - a[0]) * (a[1] - b[1])
