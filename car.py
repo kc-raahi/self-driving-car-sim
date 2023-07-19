@@ -1,3 +1,5 @@
+from random import random
+
 import pygame
 import math
 
@@ -62,6 +64,29 @@ def car_intersection(poly1, poly2):
                 return True
 
     return False
+
+
+def randomize(level, num_outputs):
+    for i in range(len(level.inputs)):
+        for j in range(len(level.outputs)):
+            level.weights[i][j] = random() * 2 - 1
+
+    for i in range(num_outputs):
+        level.biases.append(random() * 2 - 1)
+
+
+def feed_fwd(level, given_inputs):
+    for i in range(len(level.inputs)):
+        level.inputs[i] = given_inputs[i]
+
+    for i in range(len(level.outputs)):
+        cum_sum = 0
+        for j in range(len(level.inputs)):
+            cum_sum += level.inputs[j] * level.weights[j][i]
+
+        level.outputs[i] = 1 if cum_sum > level.biases[i] else 0
+
+    return level.outputs
 
 
 class Car:
@@ -264,6 +289,18 @@ class Road:
     def get_lane_center(self, lane_index):
         lane_width = self.width / self.lane_count
         return self.left + lane_width / 2 + lane_index * lane_width
+
+
+class Level:
+    def __init__(self, num_inputs, num_outputs):
+        self.inputs = []
+        self.outputs = []
+        self.biases = []
+        self.weights = []
+
+        for i in range(num_inputs):
+            self.weights[i] = []
+
 
 
 if __name__ == "__main__":
