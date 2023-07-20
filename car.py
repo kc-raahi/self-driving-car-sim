@@ -25,19 +25,19 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def get_ray_intersection(ray, length, angle, my_driver, my_traffic):
-    if ray[1][0] < 0 or ray[1][0] > SCREEN_WIDTH:
-        return True
+def get_ray_intersection(length, angle, my_driver, my_traffic):
     for i in range(length):
+        ray_point_x = my_driver.x - i * math.sin(angle)
+        ray_point_y = my_driver.y - i * math.cos(angle)
+        if ray_point_x < 0 or ray_point_x > SCREEN_WIDTH:
+            return ray_point_x, ray_point_y, i / length
         for car in my_traffic:
-            ray_point_x = my_driver.x - i * math.sin(angle)
-            ray_point_y = my_driver.y - i * math.cos(angle)
             x_check = car.x - CAR_SIZE_X / 2 <= ray_point_x <= car.x + CAR_SIZE_X / 2
             y_check = car.y - CAR_SIZE_Y / 2 <= ray_point_y <= car.y + CAR_SIZE_Y / 2
             if x_check and y_check:
-                return True
+                return ray_point_x, ray_point_y, i / length
 
-    return False
+    return None
 
 
 # 0: x; 1: y
@@ -66,16 +66,7 @@ def car_intersection(poly1, poly2):
     return False
 
 
-def randomize(level, num_outputs):
-    for i in range(len(level.inputs)):
-        for j in range(len(level.outputs)):
-            level.weights[i][j] = random() * 2 - 1
-
-    for i in range(num_outputs):
-        level.biases.append(random() * 2 - 1)
-
-
-def feed_fwd(level, given_inputs):
+def level_feed_fwd(level, given_inputs):
     for i in range(len(level.inputs)):
         level.inputs[i] = given_inputs[i]
 
@@ -89,8 +80,16 @@ def feed_fwd(level, given_inputs):
     return level.outputs
 
 
+def network_feed_fwd(nn, given_inputs):
+    outputs = level_feed_fwd(nn.levels[0], given_inputs)
+    for i in range(1, len(nn.levels)):
+        outputs = level_feed_fwd(nn.levels[i], outputs)
+
+    return outputs
+
+
 class Car:
-    def __init__(self, x, y, traffic=False):
+    def __init__(self, x, y, traffic=False, control_type="nn"):
         self.x = x
         self.y = y
         self.position = [self.x, self.y]
@@ -101,13 +100,17 @@ class Car:
         self.right = False
         self.width = CAR_SIZE_X
         self.height = CAR_SIZE_Y
-        self.angle = 0  # degrees
-        self.speed = 0
-        self.acc = 0.2
+        self.main_car = False
         self.max_speed = 3 if not self.traffic else 2
+        self.angle = 0  # degrees
+        self.speed = 0  # if not self.traffic else self.max_speed
+        self.acc = 0.2
         self.center = (self.x + CAR_SIZE_X / 2, self.y + CAR_SIZE_Y / 2)
-        self.sensors = []
-        self.drawing_sensors = []
+        self.sensors = Sensor(self)
+
+        if control_type != "keys":
+            self.brain = NeuralNetwork([self.sensors.num_rays, 6, 4])
+
         self.alive = True
         self.corners = []
 
@@ -182,6 +185,16 @@ class Car:
                 col = DRIVER_DAMAGED_COL
 
         pygame.draw.polygon(my_screen, col, self.corners)
+        if not self.traffic:
+            self.sensors.update_and_draw(self.sensors.car, my_screen, my_road)
+            offsets = []
+            for i in range(self.sensors.num_rays):
+                intersection = get_ray_intersection(self.sensors.ray_len, self.sensors.ray_angles[i],
+                                                    self.sensors.car, my_road.traffic)
+                p = 0 if intersection is None else 1 - intersection[2]
+                offsets.append(p)
+            outputs = network_feed_fwd(self.brain, offsets)
+            print(outputs)
 
     def _accel(self):
         if self.speed > self.max_speed * -1:
@@ -223,25 +236,31 @@ class Line:
 
 class Sensor:
 
-    def __init__(self, car, num_rays=4, ray_len=100, ray_spread=math.pi / 2):
+    def __init__(self, car, num_rays=5, ray_len=150, ray_spread=math.pi / 2):
         self.car = car
         self.num_rays = num_rays
         self.ray_len = ray_len
         self.ray_spread = ray_spread
         self.rays = []
         self.intersections = []
+        self.draw = True if not car.traffic else False
+        self.ray_angles = []
+        for i in range(num_rays):
+            self.ray_angles.append(lerp(self.ray_spread / 2, -self.ray_spread / 2, i / (self.num_rays - 1)) +
+                                   car.angle * DEG_TO_RAD)
+
 
     def update_and_draw(self, car, my_screen, my_road):
         self.rays = []
         y = car.y - my_road.y
         for i in range(self.num_rays):
             self.intersections.append(False)
-            ray_angle = lerp(self.ray_spread / 2, -self.ray_spread / 2, i / (self.num_rays - 1)) + car.angle * \
-                        DEG_TO_RAD
+            ray_angle = self.ray_angles[i]
             a = (car.x, y)
             b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
             self.rays.append((a, b))
-            self.intersections[i] = get_ray_intersection(self.rays[i], self.ray_len, ray_angle, car, my_road.traffic)
+            intersection = get_ray_intersection(self.ray_len, ray_angle, car, my_road.traffic)
+            self.intersections[i] = intersection is not None
 
             col = SENSOR_COL if not self.intersections[i] else SENSOR_ACTIVE_COL
             pygame.draw.line(my_screen, col, a, b, width=2)
@@ -293,14 +312,24 @@ class Road:
 
 class Level:
     def __init__(self, num_inputs, num_outputs):
-        self.inputs = []
-        self.outputs = []
+        self.inputs = [0] * num_inputs
+        self.outputs = [0] * num_outputs
         self.biases = []
-        self.weights = []
+        self.weights = [[]] * num_inputs
 
-        for i in range(num_inputs):
-            self.weights[i] = []
+        for weight in self.weights:
+            for j in range(num_outputs):
+                weight.append(random() * 2 - 1)
 
+        for i in range(num_outputs):
+            self.biases.append(random() * 2 - 1)
+
+
+class NeuralNetwork:
+    def __init__(self, neuron_counts):
+        self.levels = []
+        for i in range(len(neuron_counts) - 1):
+            self.levels.append(Level(neuron_counts[i], neuron_counts[i + 1]))
 
 
 if __name__ == "__main__":
@@ -311,7 +340,6 @@ if __name__ == "__main__":
     driver = Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9)  # int(lanes/2)+(width/lanes)
     t = Car(road.get_lane_center(0), 100, traffic=True)
     road.traffic.append(t)
-    sensor = Sensor(driver)
     run = True
     clock = pygame.time.Clock()
 
@@ -323,7 +351,6 @@ if __name__ == "__main__":
         driver.update_and_draw(road, screen)
         driver.alive = driver.assess_damage(road)
         t.update_and_draw(road, screen)
-        sensor.update_and_draw(driver, screen, road)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
