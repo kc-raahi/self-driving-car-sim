@@ -373,35 +373,13 @@ if __name__ == "__main__":
         road.draw(screen)
         t.update_and_draw(road, screen)
         for d in drivers:
+
             d.update_and_draw(road, screen)
-            d.alive = driver.assess_damage(road)
-
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-
-            if driver.ctrl_type == "keys":
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        driver.forward()
-                    elif event.key == pygame.K_DOWN:
-                        driver.backward()
-                    if event.key == pygame.K_LEFT and driver.speed != 0:
-                        driver.turn_left()
-                    elif event.key == pygame.K_RIGHT and driver.speed != 0:
-                        driver.turn_right()
-                elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                        driver.foot_off_gas()
-                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                        driver.straighten_wheel()
-
-            else:
-                driver.up = driver.dirs[0]
-                driver.left = driver.dirs[1]
-                driver.right = driver.dirs[2]
-                driver.down = driver.dirs[3]
+            d.alive = d.assess_damage(road)
+            d.up = d.dirs[0]
+            d.left = d.dirs[1]
+            d.right = d.dirs[2]
+            d.down = d.dirs[3]
 
         driver.primary = False
 
