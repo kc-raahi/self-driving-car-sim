@@ -371,10 +371,11 @@ if __name__ == "__main__":
         driver.primary = True
         road.move_viewport(driver.y)
         road.draw(screen)
+        t.update_and_draw(road, screen)
         for d in drivers:
             d.update_and_draw(road, screen)
             d.alive = driver.assess_damage(road)
-        t.update_and_draw(road, screen)
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
