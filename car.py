@@ -367,9 +367,9 @@ if __name__ == "__main__":
     while run:
         clock.tick(60)
         screen.fill(ROAD_COL)
-        driver = drivers[get_primary_car(drivers)]
-        driver.primary = True
-        road.move_viewport(driver.y)
+        main_driver = drivers[get_primary_car(drivers)]
+        main_driver.primary = True
+        road.move_viewport(main_driver.y)
         road.draw(screen)
         t.update_and_draw(road, screen)
         for d in drivers:
@@ -381,7 +381,7 @@ if __name__ == "__main__":
             d.right = d.dirs[2]
             d.down = d.dirs[3]
 
-        driver.primary = False
+        main_driver.primary = False
 
         pygame.display.update()
 
