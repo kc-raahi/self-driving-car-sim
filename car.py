@@ -376,14 +376,10 @@ if __name__ == "__main__":
                         driver.straighten_wheel()
 
             else:
-                if driver.dirs[0]:
-                    driver.forward()
-                if driver.dirs[1]:
-                    driver.turn_left()
-                if driver.dirs[2]:
-                    driver.turn_right()
-                if driver.dirs[3]:
-                    driver.backward()
+                driver.up = driver.dirs[0]
+                driver.left = driver.dirs[1]
+                driver.right = driver.dirs[2]
+                driver.down = driver.dirs[3]
 
         pygame.display.update()
 
