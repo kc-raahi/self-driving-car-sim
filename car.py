@@ -18,6 +18,7 @@ LINE_WIDTH = 5
 DASH_HEIGHT = 20
 DRIVER_COL = (100, 100, 200)
 DRIVER_DAMAGED_COL = (150, 150, 200)
+DRIVER_SECONDARY_COL = (50, 50, 200)
 TRAFFIC_COL = (100, 200, 100)
 
 
@@ -88,6 +89,15 @@ def network_feed_fwd(nn, given_inputs):
     return outputs
 
 
+def get_primary_car(cars):
+    y = cars[0].y
+    primary_index = 0
+    for i in range(len(cars)):
+        if cars[i].y < y:
+            primary_index = i
+
+    return primary_index
+
 class Car:
     def __init__(self, x, y, traffic=False, ctrl_type="nn"):
         self.x = x
@@ -110,6 +120,7 @@ class Car:
         self.brain = NeuralNetwork([self.sensors.num_rays, 6, 4])
         self.ctrl_type = ctrl_type
         self.alive = True
+        self.primary = False
         self.corners = []
         self.dirs = []
 
@@ -184,7 +195,10 @@ class Car:
             col = TRAFFIC_COL
         else:
             if self.alive:
-                col = DRIVER_COL
+                if self.primary:
+                    col = DRIVER_COL
+                else:
+                    col = DRIVER_SECONDARY_COL
             else:
                 col = DRIVER_DAMAGED_COL
 
@@ -266,7 +280,8 @@ class Sensor:
             self.intersections[i] = intersection is not None
 
             col = SENSOR_COL if not self.intersections[i] else SENSOR_ACTIVE_COL
-            pygame.draw.line(my_screen, col, a, b, width=2)
+            if car.primary:
+                pygame.draw.line(my_screen, col, a, b, width=2)
 
 
 class Road:
@@ -340,8 +355,11 @@ if __name__ == "__main__":
     pygame.display.set_caption("Self-Driving Car")
     road = Road(SCREEN_WIDTH / 2, SCREEN_WIDTH * 0.9)
     road.set_lines()
-    driver = Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9)  # int(lanes/2)+(width/lanes)
-    t = Car(road.get_lane_center(0), 100, traffic=True)
+    drivers = []
+    for i in range(100):
+        drivers.append(Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
+
+    t = Car(road.get_lane_center(1), 100, traffic=True)
     road.traffic.append(t)
     run = True
     clock = pygame.time.Clock()
@@ -349,10 +367,13 @@ if __name__ == "__main__":
     while run:
         clock.tick(60)
         screen.fill(ROAD_COL)
+        driver = drivers[get_primary_car(drivers)]
+        driver.primary = True
         road.move_viewport(driver.y)
         road.draw(screen)
-        driver.update_and_draw(road, screen)
-        driver.alive = driver.assess_damage(road)
+        for d in drivers:
+            d.update_and_draw(road, screen)
+            d.alive = driver.assess_damage(road)
         t.update_and_draw(road, screen)
 
         for event in pygame.event.get():
@@ -380,6 +401,8 @@ if __name__ == "__main__":
                 driver.left = driver.dirs[1]
                 driver.right = driver.dirs[2]
                 driver.down = driver.dirs[3]
+
+        driver.primary = False
 
         pygame.display.update()
 
