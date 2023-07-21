@@ -89,7 +89,7 @@ def network_feed_fwd(nn, given_inputs):
 
 
 class Car:
-    def __init__(self, x, y, traffic=False, control_type="nn"):
+    def __init__(self, x, y, traffic=False, ctrl_type="nn"):
         self.x = x
         self.y = y
         self.position = [self.x, self.y]
@@ -107,12 +107,11 @@ class Car:
         self.acc = 0.2
         self.center = (self.x + CAR_SIZE_X / 2, self.y + CAR_SIZE_Y / 2)
         self.sensors = Sensor(self)
-
-        if control_type != "keys":
-            self.brain = NeuralNetwork([self.sensors.num_rays, 6, 4])
-
+        self.brain = NeuralNetwork([self.sensors.num_rays, 6, 4])
+        self.ctrl_type = ctrl_type
         self.alive = True
         self.corners = []
+        self.dirs = []
 
     # retrieve the corners of the car, in list of tuples form
     def get_polygon(self, y_adj):
@@ -159,7 +158,12 @@ class Car:
         self.left = False
         self.right = True
 
+    def straighten_wheel(self):
+        self.left = False
+        self.right = False
+
     def update_and_draw(self, my_road, my_screen):
+
         if self.alive:
             if self.up:
                 self._accel()
@@ -194,7 +198,7 @@ class Car:
                 p = 0 if intersection is None else 1 - intersection[2]
                 offsets.append(p)
             outputs = network_feed_fwd(self.brain, offsets)
-            print(outputs)
+            self.dirs = outputs
 
     def _accel(self):
         if self.speed > self.max_speed * -1:
@@ -249,13 +253,12 @@ class Sensor:
             self.ray_angles.append(lerp(self.ray_spread / 2, -self.ray_spread / 2, i / (self.num_rays - 1)) +
                                    car.angle * DEG_TO_RAD)
 
-
     def update_and_draw(self, car, my_screen, my_road):
         self.rays = []
         y = car.y - my_road.y
         for i in range(self.num_rays):
             self.intersections.append(False)
-            ray_angle = self.ray_angles[i]
+            ray_angle = self.ray_angles[i] + car.angle * DEG_TO_RAD
             a = (car.x, y)
             b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
             self.rays.append((a, b))
@@ -355,22 +358,32 @@ if __name__ == "__main__":
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
+
+            if driver.ctrl_type == "keys":
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        driver.forward()
+                    elif event.key == pygame.K_DOWN:
+                        driver.backward()
+                    if event.key == pygame.K_LEFT and driver.speed != 0:
+                        driver.turn_left()
+                    elif event.key == pygame.K_RIGHT and driver.speed != 0:
+                        driver.turn_right()
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+                        driver.foot_off_gas()
+                    if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                        driver.straighten_wheel()
+
+            else:
+                if driver.dirs[0]:
                     driver.forward()
-                elif event.key == pygame.K_DOWN:
-                    driver.backward()
-                if event.key == pygame.K_LEFT and driver.speed != 0:
+                if driver.dirs[1]:
                     driver.turn_left()
-                elif event.key == pygame.K_RIGHT and driver.speed != 0:
+                if driver.dirs[2]:
                     driver.turn_right()
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
-                    driver.foot_off_gas()
-                if event.key == pygame.K_LEFT:
-                    driver.left = False
-                if event.key == pygame.K_RIGHT:
-                    driver.right = False
+                if driver.dirs[3]:
+                    driver.backward()
 
         pygame.display.update()
 
