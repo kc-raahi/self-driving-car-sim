@@ -111,7 +111,7 @@ class Car:
         self.width = CAR_SIZE_X
         self.height = CAR_SIZE_Y
         self.main_car = False
-        self.max_speed = 3 if not self.traffic else 2
+        self.max_speed = 3 if not self.traffic else -2
         self.angle = 0  # degrees
         self.speed = 0  # if not self.traffic else self.max_speed
         self.acc = 0.2
