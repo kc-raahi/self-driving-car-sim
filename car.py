@@ -89,7 +89,7 @@ def network_feed_fwd(nn, given_inputs):
     return outputs
 
 
-def get_primary_car(cars):
+def get_primary_car_index(cars):
     y = cars[0].y
     primary_index = 0
     for i in range(len(cars)):
@@ -367,13 +367,17 @@ if __name__ == "__main__":
     while run:
         clock.tick(60)
         screen.fill(ROAD_COL)
-        main_driver = drivers[get_primary_car(drivers)]
+        main_driver = drivers[get_primary_car_index(drivers)]
         main_driver.primary = True
         road.move_viewport(main_driver.y)
         road.draw(screen)
         t.update_and_draw(road, screen)
-        for d in drivers:
-
+        for i in range(len(drivers)):
+            d = drivers[i]
+            if i == get_primary_car_index(drivers):
+                d.primary = True
+            else:
+                d.primary = False
             d.update_and_draw(road, screen)
             d.alive = d.assess_damage(road)
             d.up = d.dirs[0]
