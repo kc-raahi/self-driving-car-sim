@@ -440,11 +440,11 @@ if __name__ == "__main__":
     road.traffic.append(t)
     run = True
     clock = pygame.time.Clock()
-    ct = 0
+    # ct = 0
 
     while run:
         start("run")
-        ct += 1
+        # ct += 1
         clock.tick(60)
         screen.fill(ROAD_COL)
         main_driver = drivers[get_primary_car_index(drivers)]
@@ -475,9 +475,8 @@ if __name__ == "__main__":
         pygame.display.update()
         stop("update")
         stop("run")
-        if ct > 100:
-            break
-
+        # if ct > 100:
+          #   break
 
     dump()
     pygame.quit()
