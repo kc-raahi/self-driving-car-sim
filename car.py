@@ -28,7 +28,7 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def get_ray_intersection(length, angle, my_driver, my_traffic):
+def get_ray_intersection_old(length, angle, my_driver, my_traffic):
     sin_factor = math.sin(angle)
     cos_factor = math.cos(angle)
     for i in range(length):
@@ -47,7 +47,7 @@ def get_ray_intersection(length, angle, my_driver, my_traffic):
 
 
 
-def get_ray_intersection_new(length, angle, my_driver, my_traffic):
+def get_ray_intersection(length, angle, my_driver, my_traffic):
     ray_start_pt = (my_driver.x, my_driver.y)
     ray_end_pt = (my_driver.x - length * math.sin(angle), my_driver.y - length * math.cos(angle))
     pt = None
