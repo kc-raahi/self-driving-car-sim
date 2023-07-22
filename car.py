@@ -133,14 +133,14 @@ def get_ray_intersection_new(length, angle, my_driver, my_traffic):
     return None
 
 
-def compute_intersection(start_pt_1, end_pt_1, start_pt_2, end_pt_2):
-    A1 = end_pt_1[1] - start_pt_1[1]
-    B1 = start_pt_1[0] - end_pt_1[0]
-    C1 = A1 * start_pt_1[0] + B1 * start_pt_1[1]
+def compute_intersection(p1, q1, p2, q2):
+    A1 = q1[1] - p1[1]
+    B1 = p1[0] - q1[0]
+    C1 = A1 * p1[0] + B1 * p1[1]
 
-    A2 = end_pt_2[1] - start_pt_2[1]
-    B2 = start_pt_2[0] - end_pt_2[0]
-    C2 = A2 * start_pt_2[0] + B2 * start_pt_2[1]
+    A2 = q2[1] - p2[1]
+    B2 = p2[0] - q2[0]
+    C2 = A2 * p2[0] + B2 * p2[1]
 
     determinant = A1 * B2 - A2 * B1
 
@@ -151,7 +151,7 @@ def compute_intersection(start_pt_1, end_pt_1, start_pt_2, end_pt_2):
     y = (A1 * C2 - A2 * C1) / determinant
 
     intersection = (x, y)
-    if on_segment(start_pt_1, intersection, end_pt_1) and on_segment(start_pt_2, intersection, end_pt_2):
+    if on_segment(p1, intersection, q1) and on_segment(p2, intersection, q2):
         return intersection
 
     return None
@@ -162,16 +162,15 @@ def on_segment(p, q, r):
             max(p[1], r[1]) >= q[1] >= min(p[1], r[1]))
 
 
-def do_segments_intersect(segment1, segment2):
-    def orientation(p, q, r):
-        return (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
+def orientation(p, q, r):
+    return (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
 
+
+def do_segments_intersect(segment1, segment2):
     p1, q1 = segment1
     p2, q2 = segment2
 
-    intersection = compute_intersection(p1, q1, p2, q2)
-
-    return intersection is not None
+    return compute_intersection(p1, q1, p2, q2)
 
 
 # 0: x; 1: y
