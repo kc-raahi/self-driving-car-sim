@@ -1,9 +1,11 @@
-from random import random
-
+import random
 import pygame
 import math
 
+from performance import dump, stop, start
+
 pygame.init()
+random.seed(10)
 
 CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
@@ -18,7 +20,7 @@ LINE_WIDTH = 5
 DASH_HEIGHT = 20
 DRIVER_COL = (100, 100, 200)
 DRIVER_DAMAGED_COL = (150, 150, 200)
-DRIVER_SECONDARY_COL = (50, 50, 200)
+DRIVER_SECONDARY_COL = (100, 200, 200)
 TRAFFIC_COL = (100, 200, 100)
 
 
@@ -27,9 +29,11 @@ def lerp(a, b, t):
 
 
 def get_ray_intersection(length, angle, my_driver, my_traffic):
+    sin_factor = math.sin(angle)
+    cos_factor = math.cos(angle)
     for i in range(length):
-        ray_point_x = my_driver.x - i * math.sin(angle)
-        ray_point_y = my_driver.y - i * math.cos(angle)
+        ray_point_x = my_driver.x - i * sin_factor
+        ray_point_y = my_driver.y - i * cos_factor
         if ray_point_x < 0 or ray_point_x > SCREEN_WIDTH:
             return ray_point_x, ray_point_y, i / length
         for car in my_traffic:
@@ -37,6 +41,63 @@ def get_ray_intersection(length, angle, my_driver, my_traffic):
             y_check = car.y - CAR_SIZE_Y / 2 <= ray_point_y <= car.y + CAR_SIZE_Y / 2
             if x_check and y_check:
                 return ray_point_x, ray_point_y, i / length
+
+    return None
+
+
+
+
+def get_ray_intersection_new(length, angle, my_driver, my_traffic):
+    ray_start_pt = (my_driver.x, my_driver.y)
+    ray_end_pt = (my_driver.x - length * math.sin(angle), my_driver.y - length * math.cos(angle))
+    pt = None
+
+    # check surrounding traffic
+    for car in my_traffic:
+        # top left corner, rotate counterclockwise
+        pt1 = (car.x - CAR_SIZE_X / 2, car.y - CAR_SIZE_Y / 2)
+        pt2 = (car.x - CAR_SIZE_X / 2, car.y + CAR_SIZE_Y / 2)
+        pt3 = (car.x + CAR_SIZE_X / 2, car.y + CAR_SIZE_Y / 2)
+        pt4 = (car.x + CAR_SIZE_X / 2, car.y - CAR_SIZE_Y / 2)
+        d1 = math.sqrt(math.pow(pt1[0] - my_driver.x, 2) + math.pow(pt1[1] - my_driver.y, 2))
+        d2 = math.sqrt(math.pow(pt2[0] - my_driver.x, 2) + math.pow(pt2[1] - my_driver.y, 2))
+        d3 = math.sqrt(math.pow(pt3[0] - my_driver.x, 2) + math.pow(pt3[1] - my_driver.y, 2))
+        d4 = math.sqrt(math.pow(pt4[0] - my_driver.x, 2) + math.pow(pt4[1] - my_driver.y, 2))
+        theta1 = math.atan2(pt1[1] - my_driver.y, pt1[0] - my_driver.x)
+        theta2 = math.atan2(pt2[1] - my_driver.y, pt2[0] - my_driver.x)
+        theta3 = math.atan2(pt3[1] - my_driver.y, pt3[0] - my_driver.x)
+        theta4 = math.atan2(pt4[1] - my_driver.y, pt4[0] - my_driver.x)
+        angles = sorted([theta1, theta2, theta3, theta4])
+        ds = sorted([d1, d2, d3, d4])
+        if angles[0] <= angle <= angles[3] and ds[0] <= length:
+            x, y = 0, 0
+            if theta3 > angle >= 0:                             # right side of car
+                x = car.x + CAR_SIZE_X / 2
+                y = my_driver.y - x * math.tan(angle)
+            if angle >= theta3 and angle >= 0:                  # bottom of car
+                y = car.y + CAR_SIZE_Y / 2
+                x = my_driver.x - y * math.cos(angle) / math.sin(angle)
+            if theta2 <= angle < 0:                             # left side of car
+                x = car.x - CAR_SIZE_X / 2
+                y = my_driver.y - x * math.tan(angle)
+            if angle < theta2 and angle < 0:
+                y = car.y + CAR_SIZE_Y / 2
+                x = my_driver.x + y * math.cos(angle) / math.sin(angle)
+
+            return x, y, math.sqrt(math.pow(car.x - x, 2) + math.pow(car.y - y, 2)) / length
+
+    # check if ray intersects the sides
+    left_intersection = ray_end_pt[0] < 0
+    right_intersection = ray_end_pt[0] > SCREEN_WIDTH
+
+    if left_intersection:
+        y = my_driver.x * math.tan(angle)
+        return 0, my_driver.y - y, math.sqrt(math.pow(my_driver.x, 2) + math.pow(y, 2))
+
+    if right_intersection:
+        x = SCREEN_WIDTH - my_driver.x
+        y = x * math.tan(angle)
+        return SCREEN_WIDTH, my_driver.y - y, math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 
     return None
 
@@ -174,7 +235,7 @@ class Car:
         self.right = False
 
     def update_and_draw(self, my_road, my_screen):
-
+        start("a")
         if self.alive:
             if self.up:
                 self._accel()
@@ -190,7 +251,11 @@ class Car:
             y = self.y - my_road.y
             self.get_polygon(y)
 
+        stop("a")
+
         col = (0, 0, 0)
+
+        start("b")
         if self.traffic:
             col = TRAFFIC_COL
         else:
@@ -202,17 +267,29 @@ class Car:
             else:
                 col = DRIVER_DAMAGED_COL
 
+        start("b.1")
         pygame.draw.polygon(my_screen, col, self.corners)
+        pygame.draw.polygon(my_screen, (255, 255, 255), self.corners, width=1)
+        stop("b.1")
+        start("b.2")
         if not self.traffic:
+            start("b.2.3")
             self.sensors.update_and_draw(self.sensors.car, my_screen, my_road)
+            stop("b.2.3")
             offsets = []
             for i in range(self.sensors.num_rays):
+                start("get_ray_intersection")
                 intersection = get_ray_intersection(self.sensors.ray_len, self.sensors.ray_angles[i],
                                                     self.sensors.car, my_road.traffic)
+                stop("get_ray_intersection")
                 p = 0 if intersection is None else 1 - intersection[2]
                 offsets.append(p)
+            start("b.2.2")
             outputs = network_feed_fwd(self.brain, offsets)
+            stop("b.2.2")
             self.dirs = outputs
+        stop("b.2")
+        stop("b")
 
     def _accel(self):
         if self.speed > self.max_speed * -1:
@@ -337,10 +414,10 @@ class Level:
 
         for weight in self.weights:
             for j in range(num_outputs):
-                weight.append(random() * 2 - 1)
+                weight.append(random.random() * 2 - 1)
 
         for i in range(num_outputs):
-            self.biases.append(random() * 2 - 1)
+            self.biases.append(random.random() * 2 - 1)
 
 
 class NeuralNetwork:
@@ -363,8 +440,11 @@ if __name__ == "__main__":
     road.traffic.append(t)
     run = True
     clock = pygame.time.Clock()
+    ct = 0
 
     while run:
+        start("run")
+        ct += 1
         clock.tick(60)
         screen.fill(ROAD_COL)
         main_driver = drivers[get_primary_car_index(drivers)]
@@ -372,21 +452,32 @@ if __name__ == "__main__":
         road.move_viewport(main_driver.y)
         road.draw(screen)
         t.update_and_draw(road, screen)
+        pci = get_primary_car_index(drivers)
         for i in range(len(drivers)):
             d = drivers[i]
-            if i == get_primary_car_index(drivers):
+            if i == pci:
                 d.primary = True
             else:
                 d.primary = False
+            start("update_and_draw")
             d.update_and_draw(road, screen)
+            stop("update_and_draw")
+            start("assess_damage")
             d.alive = d.assess_damage(road)
+            stop("assess_damage")
             d.up = d.dirs[0]
             d.left = d.dirs[1]
             d.right = d.dirs[2]
             d.down = d.dirs[3]
 
         main_driver.primary = False
-
+        start("update")
         pygame.display.update()
+        stop("update")
+        stop("run")
+        if ct > 100:
+            break
 
+
+    dump()
     pygame.quit()
