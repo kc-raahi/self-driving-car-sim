@@ -28,25 +28,6 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def get_ray_intersection_old(length, angle, my_driver, my_traffic):
-    sin_factor = math.sin(angle)
-    cos_factor = math.cos(angle)
-    for i in range(length):
-        ray_point_x = my_driver.x - i * sin_factor
-        ray_point_y = my_driver.y - i * cos_factor
-        if ray_point_x < 0 or ray_point_x > SCREEN_WIDTH:
-            return ray_point_x, ray_point_y, i / length
-        for car in my_traffic:
-            x_check = car.x - CAR_SIZE_X / 2 <= ray_point_x <= car.x + CAR_SIZE_X / 2
-            y_check = car.y - CAR_SIZE_Y / 2 <= ray_point_y <= car.y + CAR_SIZE_Y / 2
-            if x_check and y_check:
-                return ray_point_x, ray_point_y, i / length
-
-    return None
-
-
-
-
 def get_ray_intersection(length, angle, my_driver, my_traffic):
     start("get_ray_intersection")
     ray_start_pt = (my_driver.x, my_driver.y)
@@ -104,6 +85,93 @@ def get_ray_intersection(length, angle, my_driver, my_traffic):
 
     stop("get_ray_intersection")
     return None
+
+
+def get_ray_intersection_new(length, angle, my_driver, my_traffic):
+    start("get_ray_intersection")
+    ray_start_pt = (my_driver.x, my_driver.y)
+    ray_end_pt = (my_driver.x - length * math.sin(angle), my_driver.y - length * math.cos(angle))
+    ray = (ray_start_pt, ray_end_pt)
+    pt = None
+
+    # check surrounding traffic
+    for car in my_traffic:
+        x, y = 0, 0
+        # top left corner, rotate counterclockwise
+        pt1 = (car.x - CAR_SIZE_X / 2, car.y - CAR_SIZE_Y / 2)
+        pt2 = (car.x - CAR_SIZE_X / 2, car.y + CAR_SIZE_Y / 2)
+        pt3 = (car.x + CAR_SIZE_X / 2, car.y + CAR_SIZE_Y / 2)
+        pt4 = (car.x + CAR_SIZE_X / 2, car.y - CAR_SIZE_Y / 2)
+        left_side = pt1, pt2
+        bottom = pt2, pt3
+        right_side = pt3, pt4
+        top = pt4, pt1
+        sides = [left_side, bottom, right_side, top]
+        for side in sides:
+            if do_segments_intersect(ray, side):
+                x, y = compute_intersection(ray_start_pt, ray_end_pt, side[0], side[1])
+                break
+
+        return x, y, math.sqrt(math.pow(car.x - x, 2) + math.pow(car.y - y, 2)) / length
+
+    # check if ray intersects the sides
+    left_intersection = ray_end_pt[0] < 0
+    right_intersection = ray_end_pt[0] > SCREEN_WIDTH
+
+    if left_intersection:
+        y = my_driver.x * math.tan(angle)
+        stop("get_ray_intersection")
+        return 0, my_driver.y - y, math.sqrt(math.pow(my_driver.x, 2) + math.pow(y, 2))
+
+    if right_intersection:
+        x = SCREEN_WIDTH - my_driver.x
+        y = x * math.tan(angle)
+        stop("get_ray_intersection")
+        return SCREEN_WIDTH, my_driver.y - y, math.sqrt(math.pow(x, 2) + math.pow(y, 2))
+
+    stop("get_ray_intersection")
+    return None
+
+
+def compute_intersection(start_pt_1, end_pt_1, start_pt_2, end_pt_2):
+    A1 = end_pt_1[1] - start_pt_1[1]
+    B1 = start_pt_1[0] - end_pt_1[0]
+    C1 = A1 * start_pt_1[0] + B1 * start_pt_1[1]
+
+    A2 = end_pt_2[1] - start_pt_2[1]
+    B2 = start_pt_2[0] - end_pt_2[0]
+    C2 = A2 * start_pt_2[0] + B2 * start_pt_2[1]
+
+    determinant = A1 * B2 - A2 * B1
+
+    if determinant == 0:  # Lines are parallel
+        return None
+
+    x = (B2 * C1 - B1 * C2) / determinant
+    y = (A1 * C2 - A2 * C1) / determinant
+
+    intersection = (x, y)
+    if on_segment(start_pt_1, intersection, end_pt_1) and on_segment(start_pt_2, intersection, end_pt_2):
+        return intersection
+
+    return None
+
+
+def on_segment(p, q, r):
+    return (max(p[0], r[0]) >= q[0] >= min(p[0], r[0]) and
+            max(p[1], r[1]) >= q[1] >= min(p[1], r[1]))
+
+
+def do_segments_intersect(segment1, segment2):
+    def orientation(p, q, r):
+        return (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
+
+    p1, q1 = segment1
+    p2, q2 = segment2
+
+    intersection = compute_intersection(p1, q1, p2, q2)
+
+    return intersection is not None
 
 
 # 0: x; 1: y
