@@ -413,7 +413,7 @@ class Sensor:
         self.ray_len = ray_len
         self.ray_spread = ray_spread
         self.rays = []
-        self.intersections = []
+        self.intersections = [False] * num_rays
         self.draw = True if not car.traffic else False
         self.ray_angles = []
         for i in range(num_rays):
@@ -424,7 +424,6 @@ class Sensor:
         self.rays = []
         y = car.y - my_road.y
         for i in range(self.num_rays):
-            self.intersections.append(False)
             ray_angle = self.ray_angles[i] + car.angle * DEG_TO_RAD
             a = (car.x, y)
             b = (car.x - self.ray_len * math.sin(ray_angle), y - self.ray_len * math.cos(ray_angle))
