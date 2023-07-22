@@ -108,11 +108,9 @@ def get_ray_intersection_new(length, angle, my_driver, my_traffic):
         top = pt4, pt1
         sides = [left_side, bottom, right_side, top]
         for side in sides:
-            if do_segments_intersect(ray, side):
+            if compute_intersection(ray_start_pt, ray_end_pt, side[0], side[1]) is not None:
                 x, y = compute_intersection(ray_start_pt, ray_end_pt, side[0], side[1])
-                break
-
-        return x, y, math.sqrt(math.pow(car.x - x, 2) + math.pow(car.y - y, 2)) / length
+                return x, y, math.sqrt(math.pow(car.x - x, 2) + math.pow(car.y - y, 2)) / length
 
     # check if ray intersects the sides
     left_intersection = ray_end_pt[0] < 0
