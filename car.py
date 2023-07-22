@@ -5,7 +5,7 @@ import math
 from performance import dump, stop, start
 
 pygame.init()
-random.seed(10)
+# random.seed(40)
 
 CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
@@ -48,6 +48,7 @@ def get_ray_intersection_old(length, angle, my_driver, my_traffic):
 
 
 def get_ray_intersection(length, angle, my_driver, my_traffic):
+    start("get_ray_intersection")
     ray_start_pt = (my_driver.x, my_driver.y)
     ray_end_pt = (my_driver.x - length * math.sin(angle), my_driver.y - length * math.cos(angle))
     pt = None
@@ -83,7 +84,7 @@ def get_ray_intersection(length, angle, my_driver, my_traffic):
             if angle < theta2 and angle < 0:
                 y = car.y + CAR_SIZE_Y / 2
                 x = my_driver.x + y * math.cos(angle) / math.sin(angle)
-
+            stop("get_ray_intersection")
             return x, y, math.sqrt(math.pow(car.x - x, 2) + math.pow(car.y - y, 2)) / length
 
     # check if ray intersects the sides
@@ -92,13 +93,16 @@ def get_ray_intersection(length, angle, my_driver, my_traffic):
 
     if left_intersection:
         y = my_driver.x * math.tan(angle)
+        stop("get_ray_intersection")
         return 0, my_driver.y - y, math.sqrt(math.pow(my_driver.x, 2) + math.pow(y, 2))
 
     if right_intersection:
         x = SCREEN_WIDTH - my_driver.x
         y = x * math.tan(angle)
+        stop("get_ray_intersection")
         return SCREEN_WIDTH, my_driver.y - y, math.sqrt(math.pow(x, 2) + math.pow(y, 2))
 
+    stop("get_ray_intersection")
     return None
 
 
@@ -149,6 +153,17 @@ def network_feed_fwd(nn, given_inputs):
 
     return outputs
 
+def get_primary_car(cars):
+    y = cars[0].y
+    primary_index = 0
+    car = None
+    for i in range(len(cars)):
+        if cars[i].y < y:
+            primary_index = i
+            y = cars[i].y
+
+    return cars[primary_index]
+
 
 def get_primary_car_index(cars):
     y = cars[0].y
@@ -156,6 +171,7 @@ def get_primary_car_index(cars):
     for i in range(len(cars)):
         if cars[i].y < y:
             primary_index = i
+            y = cars[i].y
 
     return primary_index
 
@@ -235,7 +251,6 @@ class Car:
         self.right = False
 
     def update_and_draw(self, my_road, my_screen):
-        start("a")
         if self.alive:
             if self.up:
                 self._accel()
@@ -250,8 +265,6 @@ class Car:
             self._turn()
             y = self.y - my_road.y
             self.get_polygon(y)
-
-        stop("a")
 
         col = (0, 0, 0)
 
@@ -278,10 +291,8 @@ class Car:
             stop("b.2.3")
             offsets = []
             for i in range(self.sensors.num_rays):
-                start("get_ray_intersection")
                 intersection = get_ray_intersection(self.sensors.ray_len, self.sensors.ray_angles[i],
                                                     self.sensors.car, my_road.traffic)
-                stop("get_ray_intersection")
                 p = 0 if intersection is None else 1 - intersection[2]
                 offsets.append(p)
             start("b.2.2")
@@ -441,18 +452,27 @@ if __name__ == "__main__":
     run = True
     clock = pygame.time.Clock()
     # ct = 0
-
+    best_pos = 10000
+    no_improvement_ct = 0
     while run:
         start("run")
         # ct += 1
         clock.tick(60)
         screen.fill(ROAD_COL)
-        main_driver = drivers[get_primary_car_index(drivers)]
-        main_driver.primary = True
-        road.move_viewport(main_driver.y)
+        # main_driver = drivers[get_primary_car_index(drivers)]
+        # main_driver.primary = True
         road.draw(screen)
         t.update_and_draw(road, screen)
         pci = get_primary_car_index(drivers)
+        road.move_viewport(drivers[pci])
+        new_best_pos = drivers[pci].y
+        if new_best_pos < best_pos:
+            no_improvement_ct = 0
+            best_pos = min(best_pos, new_best_pos)
+        else:
+            no_improvement_ct += 1
+            if no_improvement_ct > 3:
+                break
         for i in range(len(drivers)):
             d = drivers[i]
             if i == pci:
