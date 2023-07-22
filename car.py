@@ -464,7 +464,7 @@ if __name__ == "__main__":
         road.draw(screen)
         t.update_and_draw(road, screen)
         pci = get_primary_car_index(drivers)
-        road.move_viewport(drivers[pci])
+        road.move_viewport(drivers[pci].y)
         new_best_pos = drivers[pci].y
         if new_best_pos < best_pos:
             no_improvement_ct = 0
@@ -490,7 +490,7 @@ if __name__ == "__main__":
             d.right = d.dirs[2]
             d.down = d.dirs[3]
 
-        main_driver.primary = False
+        drivers[pci].primary = False
         start("update")
         pygame.display.update()
         stop("update")
