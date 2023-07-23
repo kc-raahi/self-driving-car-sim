@@ -553,6 +553,7 @@ if __name__ == "__main__":
             d.left = d.dirs[1]
             d.right = d.dirs[2]
             d.down = d.dirs[3]
+            # print(i, ":", d.x, ",", d.y, ",", d.angle)
 
         drivers[pci].primary = False
         start("update")
