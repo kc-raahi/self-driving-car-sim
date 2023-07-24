@@ -28,65 +28,6 @@ def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def get_ray_intersection_old(length, angle, my_driver, my_traffic):
-    start("get_ray_intersection")
-    ray_start_pt = (my_driver.x, my_driver.y)
-    ray_end_pt = (my_driver.x - length * math.sin(angle), my_driver.y - length * math.cos(angle))
-    pt = None
-
-    # check surrounding traffic
-    for car in my_traffic:
-        # top left corner, rotate counterclockwise
-        pt1 = (car.x - CAR_SIZE_X / 2, car.y - CAR_SIZE_Y / 2)
-        pt2 = (car.x - CAR_SIZE_X / 2, car.y + CAR_SIZE_Y / 2)
-        pt3 = (car.x + CAR_SIZE_X / 2, car.y + CAR_SIZE_Y / 2)
-        pt4 = (car.x + CAR_SIZE_X / 2, car.y - CAR_SIZE_Y / 2)
-        d1 = math.sqrt(math.pow(pt1[0] - my_driver.x, 2) + math.pow(pt1[1] - my_driver.y, 2))
-        d2 = math.sqrt(math.pow(pt2[0] - my_driver.x, 2) + math.pow(pt2[1] - my_driver.y, 2))
-        d3 = math.sqrt(math.pow(pt3[0] - my_driver.x, 2) + math.pow(pt3[1] - my_driver.y, 2))
-        d4 = math.sqrt(math.pow(pt4[0] - my_driver.x, 2) + math.pow(pt4[1] - my_driver.y, 2))
-        theta1 = math.atan2(pt1[1] - my_driver.y, pt1[0] - my_driver.x)
-        theta2 = math.atan2(pt2[1] - my_driver.y, pt2[0] - my_driver.x)
-        theta3 = math.atan2(pt3[1] - my_driver.y, pt3[0] - my_driver.x)
-        theta4 = math.atan2(pt4[1] - my_driver.y, pt4[0] - my_driver.x)
-        angles = sorted([theta1, theta2, theta3, theta4])
-        ds = sorted([d1, d2, d3, d4])
-        if angles[0] <= angle <= angles[3] and ds[0] <= length:
-            x, y = 0, 0
-            if theta3 > angle >= 0:                             # right side of car
-                x = car.x + CAR_SIZE_X / 2
-                y = my_driver.y - x * math.tan(angle)
-            if angle >= theta3 and angle >= 0:                  # bottom of car
-                y = car.y + CAR_SIZE_Y / 2
-                x = my_driver.x - y * math.cos(angle) / math.sin(angle)
-            if theta2 <= angle < 0:                             # left side of car
-                x = car.x - CAR_SIZE_X / 2
-                y = my_driver.y - x * math.tan(angle)
-            if angle < theta2 and angle < 0:
-                y = car.y + CAR_SIZE_Y / 2
-                x = my_driver.x + y * math.cos(angle) / math.sin(angle)
-            stop("get_ray_intersection")
-            return x, y, math.sqrt(math.pow(car.x - x, 2) + math.pow(car.y - y, 2)) / length
-
-    # check if ray intersects the sides
-    left_intersection = ray_end_pt[0] < 0
-    right_intersection = ray_end_pt[0] > SCREEN_WIDTH
-
-    if left_intersection:
-        y = my_driver.x * math.tan(angle)
-        stop("get_ray_intersection")
-        return 0, my_driver.y - y, math.sqrt(math.pow(my_driver.x, 2) + math.pow(y, 2))
-
-    if right_intersection:
-        x = SCREEN_WIDTH - my_driver.x
-        y = x * math.tan(angle)
-        stop("get_ray_intersection")
-        return SCREEN_WIDTH, my_driver.y - y, math.sqrt(math.pow(x, 2) + math.pow(y, 2))
-
-    stop("get_ray_intersection")
-    return None
-
-
 def get_ray_intersection(length, angle, my_driver, my_traffic):
     start("get_ray_intersection")
     ray_start_pt = (my_driver.x, my_driver.y)
@@ -239,6 +180,15 @@ def get_primary_car_index(cars):
             y = cars[i].y
 
     return primary_index
+
+
+def generate_cars(n, my_road):
+    cars = []
+    for i in range(n):
+        cars.append(Car(my_road.get_lane_center(int(my_road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
+
+    return cars
+
 
 class Car:
     def __init__(self, x, y, traffic=False, ctrl_type="nn"):
@@ -447,6 +397,7 @@ class Road:
         self.right = x + width / 2
         self.lines = []
         self.traffic = []
+        self.lane_count = lane_count
 
     # print the road in relation to the car
     def move_viewport(self, car_y):
@@ -508,10 +459,8 @@ if __name__ == "__main__":
     pygame.display.set_caption("Self-Driving Car")
     road = Road(SCREEN_WIDTH / 2, SCREEN_WIDTH * 0.9)
     road.set_lines()
-    drivers = []
-    for i in range(100):
-        drivers.append(Car(road.get_lane_center(int(road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
 
+    drivers = generate_cars(100, road)
     t = Car(road.get_lane_center(1), 100, traffic=True)
     road.traffic.append(t)
     run = True
@@ -521,6 +470,7 @@ if __name__ == "__main__":
     no_improvement_ct = 0
     while run:
         start("run")
+
         # ct += 1
         clock.tick(60)
         screen.fill(ROAD_COL)
