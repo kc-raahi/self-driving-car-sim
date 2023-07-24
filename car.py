@@ -182,7 +182,7 @@ def get_primary_car_index(cars):
     return primary_index
 
 
-def generate_cars(n, my_road):
+def generate_cars(n, my_road, brain):
     cars = []
     for i in range(n):
         cars.append(Car(my_road.get_lane_center(int(my_road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
@@ -468,7 +468,7 @@ if __name__ == "__main__":
     best_brain = None
     while run:
         best_pos = 10000
-        drivers = generate_cars(100, road)
+        drivers = generate_cars(100, road, best_brain)
         no_improvement_ct = 0
 
         start("run")
