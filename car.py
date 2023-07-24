@@ -468,6 +468,7 @@ if __name__ == "__main__":
     # ct = 0
     best_pos = 10000
     no_improvement_ct = 0
+    best_brain = None
     while run:
         start("run")
 
@@ -514,5 +515,6 @@ if __name__ == "__main__":
         # if ct > 100:
           #   break
 
+        best_brain = drivers[pci].brain
     dump()
     pygame.quit()
