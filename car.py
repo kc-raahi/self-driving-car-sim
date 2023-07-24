@@ -470,6 +470,7 @@ if __name__ == "__main__":
     no_improvement_ct = 0
     best_brain = None
     while run:
+
         start("run")
 
         # ct += 1
