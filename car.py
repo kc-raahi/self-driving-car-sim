@@ -460,62 +460,61 @@ if __name__ == "__main__":
     road = Road(SCREEN_WIDTH / 2, SCREEN_WIDTH * 0.9)
     road.set_lines()
 
-    drivers = generate_cars(100, road)
     t = Car(road.get_lane_center(1), 100, traffic=True)
     road.traffic.append(t)
     run = True
     clock = pygame.time.Clock()
     # ct = 0
-    best_pos = 10000
-    no_improvement_ct = 0
     best_brain = None
     while run:
+        best_pos = 10000
+        drivers = generate_cars(100, road)
+        no_improvement_ct = 0
 
         start("run")
-
-        # ct += 1
-        clock.tick(60)
-        screen.fill(ROAD_COL)
-        # main_driver = drivers[get_primary_car_index(drivers)]
-        # main_driver.primary = True
-        road.draw(screen)
-        t.update_and_draw(road, screen)
-        pci = get_primary_car_index(drivers)
-        road.move_viewport(drivers[pci].y)
-        new_best_pos = drivers[pci].y
-        if new_best_pos < best_pos:
-            no_improvement_ct = 0
-            best_pos = min(best_pos, new_best_pos)
-        else:
-            no_improvement_ct += 1
-            if no_improvement_ct > 60:
-                break
-        for i in range(len(drivers)):
-            d = drivers[i]
-            if i == pci:
-                d.primary = True
+        while no_improvement_ct <= 60:
+            clock.tick(60)
+            screen.fill(ROAD_COL)
+            # main_driver = drivers[get_primary_car_index(drivers)]
+            # main_driver.primary = True
+            road.draw(screen)
+            t.update_and_draw(road, screen)
+            pci = get_primary_car_index(drivers)
+            road.move_viewport(drivers[pci].y)
+            new_best_pos = drivers[pci].y
+            if new_best_pos < best_pos:
+                no_improvement_ct = 0
+                best_pos = min(best_pos, new_best_pos)
             else:
-                d.primary = False
-            start("update_and_draw")
-            d.update_and_draw(road, screen)
-            stop("update_and_draw")
-            start("assess_damage")
-            d.alive = d.assess_damage(road)
-            stop("assess_damage")
-            d.up = d.dirs[0]
-            d.left = d.dirs[1]
-            d.right = d.dirs[2]
-            d.down = d.dirs[3]
-            # print(i, ":", d.x, ",", d.y, ",", d.angle)
+                no_improvement_ct += 1
 
-        drivers[pci].primary = False
-        start("update")
-        pygame.display.update()
-        stop("update")
+            for i in range(len(drivers)):
+                d = drivers[i]
+                if i == pci:
+                    d.primary = True
+                else:
+                    d.primary = False
+                start("update_and_draw")
+                d.update_and_draw(road, screen)
+                stop("update_and_draw")
+                start("assess_damage")
+                d.alive = d.assess_damage(road)
+                stop("assess_damage")
+                d.up = d.dirs[0]
+                d.left = d.dirs[1]
+                d.right = d.dirs[2]
+                d.down = d.dirs[3]
+                # print(i, ":", d.x, ",", d.y, ",", d.angle)
+
+            drivers[pci].primary = False
+            start("update")
+            pygame.display.update()
+            stop("update")
+            best_brain = drivers[pci].brain
+        print(best_brain.levels)
         stop("run")
-        # if ct > 100:
-          #   break
 
-        best_brain = drivers[pci].brain
+
+
     dump()
     pygame.quit()
