@@ -486,7 +486,7 @@ if __name__ == "__main__":
             best_pos = min(best_pos, new_best_pos)
         else:
             no_improvement_ct += 1
-            if no_improvement_ct > 3:
+            if no_improvement_ct > 60:
                 break
         for i in range(len(drivers)):
             d = drivers[i]
