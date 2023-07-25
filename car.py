@@ -206,9 +206,7 @@ def generate_cars(n, my_road, nn=None):
             if i == 0:
                 cars[i].brain = nn
             else:
-                cars[i].brain = nn_mutate(nn, 0.1)
-                for lv in cars[i].brain.levels:
-                    print(lv.weights, lv.biases)
+                cars[i].brain = nn_mutate(nn, 0.01)
 
     return cars
 
@@ -544,8 +542,7 @@ if __name__ == "__main__":
             stop("update")
             best_brain = drivers[pci].brain
 
-        for lv in best_brain.levels:
-            print(lv.weights, lv.biases)
+
         stop("run")
 
 
