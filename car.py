@@ -51,7 +51,7 @@ def get_ray_intersection(length, angle, my_driver, my_traffic):
         for side in sides:
             if compute_intersection(ray_start_pt, ray_end_pt, side[0], side[1]) is not None:
                 x, y = compute_intersection(ray_start_pt, ray_end_pt, side[0], side[1])
-                offset = math.sqrt(math.pow(car.x - x, 2) + math.pow(car.y - y, 2)) / length
+                offset = math.sqrt(math.pow(my_driver.x - x, 2) + math.pow(my_driver.y - y, 2)) / length
                 return x, y, offset
 
     # check if ray intersects the sides
@@ -59,14 +59,15 @@ def get_ray_intersection(length, angle, my_driver, my_traffic):
     right_intersection = ray_end_pt[0] > SCREEN_WIDTH
 
     if left_intersection:
-        y = my_driver.x * math.tan(angle)
+        x = my_driver.x
+        y = my_driver.x * math.tan(math.pi / 2 - angle)
         stop("get_ray_intersection")
-        offset = math.sqrt(math.pow(my_driver.x, 2) + math.pow(y, 2)) / length
+        offset = math.sqrt(math.pow(x, 2) + math.pow(y, 2)) / length
         return 0, my_driver.y - y, offset
 
     if right_intersection:
         x = SCREEN_WIDTH - my_driver.x
-        y = x * math.tan(angle)
+        y = x * math.tan(angle - math.pi / 2)
         stop("get_ray_intersection")
         offset = math.sqrt(math.pow(x, 2) + math.pow(y, 2)) / length
         return SCREEN_WIDTH, my_driver.y - y, offset
@@ -202,7 +203,7 @@ def generate_cars(n, my_road, nn=None):
     for i in range(n):
         cars.append(Car(my_road.get_lane_center(int(my_road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
         if nn is not None and i != 0:
-            cars[i].brain = nn_mutate(nn, 0.1)
+            cars[i].brain = nn_mutate(nn, 0.2)
 
     return cars
 
@@ -533,8 +534,6 @@ if __name__ == "__main__":
             pygame.display.update()
             stop("update")
             best_brain = drivers[pci].brain
-        for lv in best_brain.levels:
-            print(lv.weights, lv.biases)
         stop("run")
 
 
