@@ -159,6 +159,18 @@ def network_feed_fwd(nn, given_inputs):
 
     return outputs
 
+
+def nn_mutate(nn, amt=float(1)):
+    for lv in nn.levels:
+        for i in range(len(lv.biases)):
+            lv.biases[i] = lerp(lv.biases[i], random.random() * 2 - 1, amt)
+
+        for i in range(len(lv.weights)):
+            for j in range(len(lv.weights[i])):
+                lv.weights[i][j] = lerp(lv.weights[i][j], random.random() * 2 - 1, amt)
+
+    return nn
+
 def get_primary_car(cars):
     y = cars[0].y
     primary_index = 0
@@ -182,10 +194,12 @@ def get_primary_car_index(cars):
     return primary_index
 
 
-def generate_cars(n, my_road, brain):
+def generate_cars(n, my_road, nn=None):
     cars = []
     for i in range(n):
         cars.append(Car(my_road.get_lane_center(int(my_road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
+        if nn is not None and i != 0:
+            cars[i].brain = nn_mutate(nn, 0.1)
 
     return cars
 
@@ -468,7 +482,7 @@ if __name__ == "__main__":
     best_brain = None
     while run:
         best_pos = 10000
-        drivers = generate_cars(100, road, best_brain)
+        drivers = generate_cars(100, road, nn=best_brain)
         no_improvement_ct = 0
 
         start("run")
@@ -489,6 +503,7 @@ if __name__ == "__main__":
                 no_improvement_ct += 1
 
             for i in range(len(drivers)):
+                pci = get_primary_car_index(drivers)
                 d = drivers[i]
                 if i == pci:
                     d.primary = True
@@ -504,14 +519,14 @@ if __name__ == "__main__":
                 d.left = d.dirs[1]
                 d.right = d.dirs[2]
                 d.down = d.dirs[3]
-                # print(i, ":", d.x, ",", d.y, ",", d.angle)
 
             drivers[pci].primary = False
             start("update")
             pygame.display.update()
             stop("update")
             best_brain = drivers[pci].brain
-        print(best_brain.levels)
+        for lv in best_brain.levels:
+            print(lv.weights, lv.biases)
         stop("run")
 
 
