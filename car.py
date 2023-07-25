@@ -224,10 +224,10 @@ class Car:
         self.width = CAR_SIZE_X
         self.height = CAR_SIZE_Y
         self.main_car = False
-        self.max_speed = 3 if not self.traffic else -2
+        self.max_speed = 3 if not self.traffic else 2
         self.angle = 0  # degrees
-        self.speed = 0  # if not self.traffic else self.max_speed
-        self.acc = 0.2
+        self.speed = 0 if not self.traffic else self.max_speed * -1
+        self.acc = 0.2 if not self.traffic else 0
         self.center = (self.x + CAR_SIZE_X / 2, self.y + CAR_SIZE_Y / 2)
         self.sensors = Sensor(self)
         self.brain = NeuralNetwork([self.sensors.num_rays, 6, 4])
@@ -253,14 +253,15 @@ class Car:
 
     # check if the car has hit another car or offroaded
     def assess_damage(self, my_road):
+        a = True
         for pt in self.corners:
             if pt[0] < 0 or pt[0] > SCREEN_WIDTH:
-                return False
+                a = False
 
         for car in my_road.traffic:
             if car_intersection(self.corners, car.corners):
-                return False
-        return True
+                a = False
+        return a
 
     def forward(self):
         self.up = True
