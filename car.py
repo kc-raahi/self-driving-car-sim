@@ -202,7 +202,7 @@ def generate_cars(n, my_road, nn=None):
     for i in range(n):
         cars.append(Car(my_road.get_lane_center(int(my_road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
         if nn is not None and i != 0:
-            cars[i].brain = nn_mutate(nn, 0.2)
+            cars[i].brain = nn_mutate(nn, 0.5)
 
     return cars
 
