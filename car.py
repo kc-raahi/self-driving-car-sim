@@ -287,7 +287,7 @@ class Car:
         self.left = False
         self.right = False
 
-    def update_and_draw(self, my_road, my_screen):
+    def update_and_draw(self, my_road, my_screen):  #pass best car's speed in somehow
         if self.alive:
             if self.up:
                 self._accel()
@@ -493,9 +493,11 @@ if __name__ == "__main__":
         best_pos = 10000
         drivers = generate_cars(100, road, nn=best_brain)
         no_improvement_ct = 0
-
+        t = Car(road.get_lane_center(1), 100, traffic=True)
+        road.traffic = [t]
         start("run")
         while no_improvement_ct <= 60:
+
             clock.tick(60)
             screen.fill(ROAD_COL)
             # main_driver = drivers[get_primary_car_index(drivers)]
@@ -522,7 +524,8 @@ if __name__ == "__main__":
                 d.update_and_draw(road, screen)
                 stop("update_and_draw")
                 start("assess_damage")
-                d.alive = d.assess_damage(road)
+                if d.alive:
+                    d.alive = d.assess_damage(road)
                 stop("assess_damage")
                 if d.dirs[0]:
                     d.forward()
