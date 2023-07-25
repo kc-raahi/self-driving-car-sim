@@ -202,8 +202,11 @@ def generate_cars(n, my_road, nn=None):
     cars = []
     for i in range(n):
         cars.append(Car(my_road.get_lane_center(int(my_road.lane_count / 2)), SCREEN_HEIGHT * 0.9))
-        if nn is not None and i != 0:
-            cars[i].brain = nn_mutate(nn, 0.2)
+        if nn is not None:
+            if i == 0:
+                cars[i].brain = nn
+            else:
+                cars[i].brain = nn_mutate(nn, 0.1)
 
     return cars
 
@@ -377,7 +380,7 @@ class Line:
 
 class Sensor:
 
-    def __init__(self, car, num_rays=5, ray_len=100, ray_spread=math.pi / 2):
+    def __init__(self, car, num_rays=5, ray_len=150, ray_spread=math.pi / 2):
         self.car = car
         self.num_rays = num_rays
         self.ray_len = ray_len
@@ -534,6 +537,7 @@ if __name__ == "__main__":
             pygame.display.update()
             stop("update")
             best_brain = drivers[pci].brain
+
         stop("run")
 
 
