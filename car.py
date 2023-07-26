@@ -5,7 +5,7 @@ import math
 from performance import dump, stop, start
 
 pygame.init()
-random.seed(40)
+# random.seed(40)
 
 CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
