@@ -1,30 +1,20 @@
-from refactor.constants import CAR_POS_ONSCREEN
+import math
+
+from refactor.constants import EPS
 
 
-def lerp(a, b, t):
-    """
-    Linear interpolation - computes the value that is a fraction t away from a
-    :param a: start of the interval
-    :param b: end of the interval
-    :param t: between 0 and 1
-    :return:
-    """
-    return a + (b - a) * t
+def deg_to_rad(theta):
+    return (theta / 360) * 2 * math.pi
 
 
-def to_screen_y(y, viewport_top_y):
-    return viewport_top_y - y
+def clamp(x, x_min, x_max):
+    if x < x_min:
+        x = x_min
+    elif x > x_max:
+        x = x_max
+
+    return x
 
 
-def clamp(v, min_v, max_v):
-    if v > max_v:
-        return max_v
-    if v < min_v:
-        return min_v
-
-    return v
-
-def top_of_screen_from_car_y(car_y):
-    return car_y + CAR_POS_ONSCREEN
-
-
+def approx_equal(a, b):
+    return abs(a - b) < EPS

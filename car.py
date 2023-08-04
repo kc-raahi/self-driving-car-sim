@@ -5,7 +5,7 @@ import math
 from performance import dump, stop, start
 
 pygame.init()
-# random.seed(40)
+random.seed(40)
 
 CAR_SIZE_X = 30
 CAR_SIZE_Y = 50
@@ -381,7 +381,7 @@ class Line:
 
 class Sensor:
 
-    def __init__(self, car, num_rays=4, ray_len=150, ray_spread=math.pi / 2):
+    def __init__(self, car, num_rays=5, ray_len=150, ray_spread=math.pi / 2):
         self.car = car
         self.num_rays = num_rays
         self.ray_len = ray_len
