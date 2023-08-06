@@ -1,6 +1,6 @@
 import pygame
 from constants import *
-from refactor.geometry import Pt
+from geometry import Pt
 
 
 class PygameGui:

@@ -1,7 +1,7 @@
 import random
 
-from refactor.controllers import SimpleController, GenerationController
-from refactor.pygamegui import PygameGui
+from controllers import SimpleController, GenerationController
+from pygamegui import PygameGui
 
 random.seed(20)
 

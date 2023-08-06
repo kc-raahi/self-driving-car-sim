@@ -1,7 +1,7 @@
 import random
 
-from refactor.constants import SENSOR_ANGLES
-from refactor.utils import mutate_value
+from constants import SENSOR_ANGLES
+from utils import mutate_value
 
 
 class WLT:

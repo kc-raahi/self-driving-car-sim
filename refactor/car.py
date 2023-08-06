@@ -1,8 +1,8 @@
 import math
 
-from refactor.constants import *
-from refactor.geometry import Pt, transpose_line, rotate_line_about_origin, rotate_about_origin, transpose
-from refactor.utils import deg_to_rad, clamp
+from constants import *
+from geometry import Pt, transpose_line, rotate_line_about_origin, rotate_about_origin, transpose
+from utils import deg_to_rad, clamp
 
 
 class Sensor:

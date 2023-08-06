@@ -1,8 +1,8 @@
 import math
 
-from refactor.constants import SCREEN_WIDTH, CAR_LENGTH, SENSOR_LENGTH
-from refactor.geometry import Pt, dist, line_segment_intersection
-from refactor.road import Road
+from constants import SCREEN_WIDTH, CAR_LENGTH, SENSOR_LENGTH
+from geometry import Pt, dist, line_segment_intersection
+from road import Road
 
 
 class Universe:

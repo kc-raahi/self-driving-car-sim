@@ -1,4 +1,4 @@
-from refactor.car import Car
+from car import Car
 
 
 def test_outline():

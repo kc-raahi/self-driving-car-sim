@@ -1,7 +1,7 @@
 import math
 import random
 
-from refactor.constants import EPS
+from constants import EPS
 
 
 def deg_to_rad(theta):

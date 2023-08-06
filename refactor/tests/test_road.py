@@ -1,8 +1,8 @@
 import pytest
 
-from refactor.constants import MARKER_LENGTH, NUM_LANES
-from refactor.geometry import Pt
-from refactor.road import Road
+from constants import MARKER_LENGTH, NUM_LANES
+from geometry import Pt
+from road import Road
 
 
 def test_get_lines():

@@ -1,6 +1,6 @@
 import pytest
 
-from refactor.geometry import transpose, Pt, transpose_line, rotate_about_origin, line_segment_intersection
+from geometry import transpose, Pt, transpose_line, rotate_about_origin, line_segment_intersection
 
 
 def test_transpose():

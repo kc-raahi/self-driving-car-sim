@@ -1,6 +1,6 @@
 import random
 
-from refactor.constants import SENSOR_ANGLES
+from constants import SENSOR_ANGLES
 
 
 class Forward:

@@ -1,12 +1,12 @@
 import pickle
 import random
 
-from refactor.car import Car
-from refactor.constants import NUM_LANES, CAR_LENGTH
-from refactor.drivers import Forward, NNDriver
-from refactor.nn import Level, WLT, NeuralNetwork
-from refactor.road import Road
-from refactor.universe import Universe
+from car import Car
+from constants import NUM_LANES, CAR_LENGTH
+from drivers import Forward, NNDriver
+from nn import Level, WLT, NeuralNetwork
+from road import Road
+from universe import Universe
 
 
 class SimpleController:
@@ -97,11 +97,10 @@ class GenerationController:
         if primary_car is not None:
             nn = primary_car.driver.nn
         else:
-            # level_0 = Level([WLT() for i in range(2)])
-            # nn = NeuralNetwork([level_0])
-            with open("nn.pickle", "rb") as f:
-
-                nn = pickle.load(f)
+            level_0 = Level([WLT() for i in range(2)])
+            nn = NeuralNetwork([level_0])
+            # with open("nn.pickle", "rb") as f:
+            #     nn = pickle.load(f)
 
         for i in range(1, self.num_cars):
             cars.append(Car(0, y, NNDriver(nn)))

@@ -1,7 +1,7 @@
 import math
 
-from refactor.constants import EPS
-from refactor.utils import deg_to_rad, approx_equal
+from constants import EPS
+from utils import deg_to_rad, approx_equal
 
 
 class Pt:
