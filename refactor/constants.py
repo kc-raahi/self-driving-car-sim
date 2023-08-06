@@ -21,7 +21,7 @@ SENSOR_READ_COLOR = (255, 0, 0)
 
 SENSOR_LENGTH = 2 * CAR_LENGTH
 SENSOR_ANGLES = [
-    -45, -30, 0, 30, 45
+    -45, -22.5, 0, 22.5, 45
 ]
 
 EPS = 1e-12

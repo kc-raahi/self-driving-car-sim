@@ -35,9 +35,14 @@ class PygameGui:
         self.draw_cars(self.controller.universe.cars)
 
     def draw_cars(self, cars):
+        pc = self.controller.universe.primary_car
         for car in cars:
-            self.draw_outline_car(car)
-            self.draw_sensors(car)
+            if car != pc:
+                self.draw_outline_car(car)
+
+        if pc is not None:
+            self.draw_outline_car(pc)
+            self.draw_sensors(pc)
 
     def draw_outline_car(self, car):
         color = car.get_color()
@@ -46,9 +51,16 @@ class PygameGui:
         self.draw_rect(corners, 1, CAR_OUTLINE_COLOR)
 
     def draw_sensors(self, car):
+        car_center = Pt(car.x, car.y)
         for s in car.sensors:
-            line = Pt(car.x, car.y), s.current_endpoint
-            self.draw_line(line, 1, SENSOR_COLOR)
+            if s.intersection is None:
+                p = s.current_endpoint
+                color = SENSOR_COLOR
+            else:
+                p = s.intersection
+                color = SENSOR_READ_COLOR
+            line = (car_center, p)
+            self.draw_line(line, 1, color)
 
     def draw_road(self, road):
         self.screen.fill(ROAD_COLOR)

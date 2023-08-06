@@ -15,7 +15,6 @@ class Road:
         self.marker_ys = []
         for i in range(NUM_LANES - 1):
             self.marker_ys.append(MARKER_WIDTH + (i + 1) * (LANE_WIDTH + MARKER_WIDTH) - MARKER_WIDTH / 2)
-            print(self.marker_ys[i])
         self.markers = []
         x = 0
         while x < SCREEN_WIDTH + 2 * MARKER_LENGTH:

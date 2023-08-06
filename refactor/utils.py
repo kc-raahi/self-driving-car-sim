@@ -1,4 +1,5 @@
 import math
+import random
 
 from refactor.constants import EPS
 
@@ -18,3 +19,13 @@ def clamp(x, x_min, x_max):
 
 def approx_equal(a, b):
     return abs(a - b) < EPS
+
+
+def mutate_value(val, max_perturb, min_val=-1, max_val=1):
+    sign = random.choice([-1, 1])
+    min_allowed = val - (val - min_val) * max_perturb
+    max_allowed = val + (max_val - val) * max_perturb
+    if sign == -1:
+        return random.uniform(min_allowed, val)
+    else:
+        return random.uniform(val, max_allowed)

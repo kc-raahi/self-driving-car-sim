@@ -12,6 +12,8 @@ class Sensor:
         endpoint_y = SENSOR_LENGTH * math.sin(deg_to_rad(angle))
         self.origin_endpoint = Pt(endpoint_x, endpoint_y)
         self.current_endpoint = self.origin_endpoint
+        self.offset = 0
+        self.intersection = None
 
 
 class Car:
@@ -24,10 +26,11 @@ class Car:
         self.acc = 0
         self.ang_acc = 0
         self.speed = 0
+        self.max_speed = CAR_MAX_SPEED if not self.traffic else CAR_MAX_SPEED * 0.6
         self.angle = 0
         w = CAR_WIDTH
         h = CAR_LENGTH
-        self.corners = [
+        self.corners = [        # bottom left counterclockwise
             Pt(-h / 2, -w / 2),
             Pt(-h / 2, w / 2),
             Pt(h / 2, w / 2),
@@ -36,12 +39,15 @@ class Car:
         self.sensors = [
             Sensor(angle) for angle in SENSOR_ANGLES
         ]
+        self.damaged = False
 
     def step(self):
+        if self.damaged:
+            return
         acc, ang_acc = self.driver.drive(self)
         self.angle += ang_acc * CAR_ANG_ACC_STEP
         self.speed += acc * CAR_ACC_STEP
-        self.speed = clamp(self.speed, -CAR_MAX_SPEED, CAR_MAX_SPEED)
+        self.speed = clamp(self.speed, -self.max_speed, self.max_speed)
         self.x += self.speed * math.cos(deg_to_rad(self.angle))
         self.y += self.speed * math.sin(deg_to_rad(self.angle))
         for s in self.sensors:
