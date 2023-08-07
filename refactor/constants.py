@@ -24,4 +24,5 @@ SENSOR_ANGLES = [
     -45, -22.5, 0, 22.5, 45
 ]
 
+FRAME_THRESHOLD = 3600
 EPS = 1e-12

@@ -4,6 +4,9 @@ from geometry import Pt
 
 
 class PygameGui:
+    """
+    Contains all Pygame/Drawing functionality.
+    """
     def __init__(self, controller):
         self.controller = controller
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -11,6 +14,9 @@ class PygameGui:
         self.clock = pygame.time.Clock()
 
     def update(self):
+        """
+        Updates car movement. Pause/Resume/Step mode functionality
+        """
         self.clock.tick(60)
         events = pygame.event.get()
         for event in events:
@@ -78,7 +84,6 @@ class PygameGui:
     def draw_line(self, line, width, color):
         [p1, p2] = [self.to_screen_pt(p) for p in line]
         pygame.draw.line(self.screen, color, (p1.x, p1.y), (p2.x, p2.y), width)
-        pass
 
     def to_screen_pt(self, p):
         screen_x = p.x - self.controller.universe.road.left_x

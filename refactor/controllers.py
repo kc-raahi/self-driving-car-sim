@@ -45,6 +45,9 @@ class SimpleController:
 
 
 class GenerationController:
+    """
+    Pause, resume, step mode functionality. Takes # of generations, driving cars, and traffic cars.
+    """
     def __init__(self, num_gens, num_cars, num_traffic):
         self.num_gens = num_gens
         self.num_cars = num_cars
@@ -57,8 +60,11 @@ class GenerationController:
         self.max_perturb = 1
         self.universe = self.get_new_universe(None)
 
-
     def step(self):
+        """
+        Updates all movement. Handles transition from one gen to the next and the end of the sim.
+        """
+
         if not self.paused:
             self.stepno += 1
             self.universe.step()
@@ -71,7 +77,13 @@ class GenerationController:
                 self.running = False
 
     def get_new_universe(self, curr_universe):
-        self.max_perturb = 0.95 * self.max_perturb
+        """
+        Creates the universe object for the next generation once the current generation comes to an end.
+        :param curr_universe: Contains info about the best neural network and traffic pattern to carry into the next
+        gen.
+        :return: Universe object for the next generation
+        """
+        self.max_perturb *= 0.95
         print(self.max_perturb)
         universe = Universe()
         if curr_universe is None:
@@ -102,7 +114,7 @@ class GenerationController:
             # with open("nn.pickle", "rb") as f:
             #     nn = pickle.load(f)
 
-        for i in range(1, self.num_cars):
+        for i in range(self.num_cars):
             cars.append(Car(0, y, NNDriver(nn)))
             nn = nn.mutate(self.max_perturb)
 
@@ -128,6 +140,7 @@ def create_traffic_2(num_traffic, road):
         x += 3 * CAR_LENGTH
 
     return traffic
+
 
 def create_traffic_3(num_traffic, road):
     traffic = []

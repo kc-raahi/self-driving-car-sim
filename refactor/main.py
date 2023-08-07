@@ -1,4 +1,5 @@
 import random
+import sys
 
 from controllers import SimpleController, GenerationController
 from pygamegui import PygameGui

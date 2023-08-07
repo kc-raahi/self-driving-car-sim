@@ -1,6 +1,6 @@
 import math
 
-from constants import SCREEN_WIDTH, CAR_LENGTH, SENSOR_LENGTH
+from constants import SCREEN_WIDTH, CAR_LENGTH, SENSOR_LENGTH, FRAME_THRESHOLD
 from geometry import Pt, dist, line_segment_intersection
 from road import Road
 
@@ -12,12 +12,15 @@ class Universe:
         self.traffic_ahead_of_pc = 0
         self.traffic_ahead_static = 0
         self.min_traffic_ahead_static = 0
+        self.frame = 0
+
 
 
     def step(self):
         for car in self.cars:
             car.step()
 
+        self.frame += 1
         self.primary_car = self.find_primary_car()
         self.road.left_x = self.primary_car.x - 0.5 * SCREEN_WIDTH
         self.update_sensors_and_damage()
@@ -26,9 +29,14 @@ class Universe:
         return max([c for c in self.cars if not c.traffic], key=lambda c: c.x)
 
     def is_done(self):
+        """
+        Checks if current generation should end for the next generation to begin.
+        """
         if self.all_cars_crashed():
             return True
+
         pc_ahead, num_traffic_ahead = self.primary_car_ahead_of_all_traffic()
+
         if pc_ahead:
             return True
         if num_traffic_ahead == self.traffic_ahead_of_pc:
@@ -39,7 +47,9 @@ class Universe:
         if self.traffic_ahead_static > 500:
             return True
 
-
+        if self.frame != self.frame % FRAME_THRESHOLD:
+            self.frame %= FRAME_THRESHOLD
+            return True
 
         return False
 
