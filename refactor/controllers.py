@@ -173,6 +173,6 @@ def load_traffic_2():
 
 
 if __name__ == "__main__":
-    t = create_traffic_4(10, Road())
+    t = create_traffic(10, Road())
     with open("traffic2.pickle", "wb") as f:
         pickle.dump(t, f)

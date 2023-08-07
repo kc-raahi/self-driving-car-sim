@@ -11,6 +11,8 @@ class Universe:
         self.cars = []
         self.traffic_ahead_of_pc = 0
         self.traffic_ahead_static = 0
+        self.min_traffic_ahead_static = 0
+
 
     def step(self):
         for car in self.cars:
@@ -36,6 +38,8 @@ class Universe:
             self.traffic_ahead_of_pc = num_traffic_ahead
         if self.traffic_ahead_static > 500:
             return True
+
+
 
         return False
 

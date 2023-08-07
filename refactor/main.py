@@ -6,7 +6,7 @@ from pygamegui import PygameGui
 random.seed(20)
 
 if __name__ == "__main__":
-    controller = GenerationController(100, 2, 10)
+    controller = GenerationController(100, 100, 10)
     gui = PygameGui(controller)
     while controller.running:
         controller.step()
