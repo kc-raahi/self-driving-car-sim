@@ -15,4 +15,5 @@ class NNDriver:
     def drive(self, car):
         sensor_inputs = [s.offset for s in car.sensors]
         outputs = self.nn.feed_fwd(sensor_inputs)
-        return outputs[0], outputs[1]
+        return 1, outputs[1]
+    

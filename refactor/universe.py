@@ -1,4 +1,5 @@
 import math
+import pickle
 
 from constants import SCREEN_WIDTH, CAR_LENGTH, SENSOR_LENGTH, FRAME_THRESHOLD
 from geometry import Pt, dist, line_segment_intersection
@@ -38,6 +39,8 @@ class Universe:
         pc_ahead, num_traffic_ahead = self.primary_car_ahead_of_all_traffic()
 
         if pc_ahead:
+            with open("nn.pickle", "wb") as f:
+                pickle.dump(self.primary_car.driver.nn, f)
             return True
         if num_traffic_ahead == self.traffic_ahead_of_pc:
             self.traffic_ahead_static += 1

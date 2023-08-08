@@ -4,7 +4,7 @@ import random
 from car import Car
 from constants import NUM_LANES, CAR_LENGTH
 from drivers import Forward, NNDriver
-from nn import Level, WLT, NeuralNetwork
+from nn import Level, WLT, NeuralNetwork, create_nn
 from road import Road
 from universe import Universe
 
@@ -30,7 +30,7 @@ class SimpleController:
         universe = Universe()
         y = universe.road.get_lane_center(int(NUM_LANES / 2))
         universe.cars.extend(self.get_cars(50, y))
-        traffic = create_traffic(5, universe.road)
+        traffic = create_traffic_1(5, universe.road)
         universe.cars.extend(traffic)
         return universe
 
@@ -48,17 +48,18 @@ class GenerationController:
     """
     Pause, resume, step mode functionality. Takes # of generations, driving cars, and traffic cars.
     """
-    def __init__(self, num_gens, num_cars, num_traffic):
+    def __init__(self, num_gens, num_cars, traffic_pattern, nn_file):
         self.num_gens = num_gens
         self.num_cars = num_cars
-        self.num_traffic = num_traffic
+        self.traffic_pattern = traffic_pattern
+        self.nn_file = nn_file
         self.gen_no = 0
         self.stepno = 0
         self.paused = False
         self.running = True
         self.step_mode = False
         self.max_perturb = 1
-        self.universe = self.get_new_universe(None)
+        self.universe = self.get_new_universe(None, self.traffic_pattern, self.nn_file)
 
     def step(self):
         """
@@ -72,47 +73,58 @@ class GenerationController:
                 self.paused = True
         if self.universe.is_done():
             self.gen_no += 1
-            self.universe = self.get_new_universe(self.universe)
+            self.universe = self.get_new_universe(self.universe, self.traffic_pattern,
+                                                  self.nn_file)
+
             if self.gen_no > self.num_gens:
                 self.running = False
 
-    def get_new_universe(self, curr_universe):
+    def get_new_universe(self, curr_universe, traffic_pattern, nn_file):
         """
         Creates the universe object for the next generation once the current generation comes to an end.
         :param curr_universe: Contains info about the best neural network and traffic pattern to carry into the next
         gen.
-        :return: Universe object for the next generation
+        :param traffic_pattern:
+        :param nn_file:
+        return: Universe object for the next generation
         """
         self.max_perturb *= 0.95
         print(self.max_perturb)
         universe = Universe()
         if curr_universe is None:
-            cars = self.add_cars(universe, None)
+            cars = self.add_cars(universe, nn_file, None)
         else:
-            with open("nn.pickle", "wb") as f:
-                pickle.dump(curr_universe.primary_car.driver.nn, f, pickle.HIGHEST_PROTOCOL)
-            cars = self.add_cars(universe, curr_universe.primary_car)
-        return self.setup_universe(universe, cars)
+            cars = self.add_cars(universe, nn_file, curr_universe.primary_car)
+        return self.setup_universe(universe, cars, traffic_pattern)
 
-    def setup_universe(self, universe, cars):
-        # y = universe.road.get_lane_center(int(NUM_LANES / 2))
-        # universe.cars.extend(self.get_cars(50, y))
+    def setup_universe(self, universe, cars, traffic_pattern):
         universe.cars.extend(cars)
-        traffic = create_traffic_4(10, universe.road)
+        if traffic_pattern == 2:
+            traffic = load_traffic("cascade_down_traffic.pickle")
+        elif traffic_pattern == 3:
+            traffic = load_traffic("diamond_traffic.pickle")
+        elif traffic_pattern == 4:
+            traffic = load_traffic("random_traffic_1.pickle")
+        elif traffic_pattern == 5:
+            traffic = load_traffic("random_traffic_2.pickle")
+        else:
+            traffic = load_traffic("cascade_up_traffic.pickle")
+
         universe.cars.extend(traffic)
         universe.primary_car = cars[0]
         return universe
 
-    def add_cars(self, universe, primary_car=None):
+    def add_cars(self, universe, nn_file, primary_car=None):
         cars = []
         y = universe.road.get_lane_center(int(NUM_LANES / 2))
         if primary_car is not None:
             nn = primary_car.driver.nn
         else:
-            level_0 = Level([WLT() for i in range(2)])
-            nn = NeuralNetwork([level_0])
-            # with open("nn.pickle", "rb") as f:
-            #     nn = pickle.load(f)
+            if nn_file != "":
+                with open(nn_file, "rb") as f:
+                    nn = pickle.load(f)
+            else:
+                nn = create_nn([4, 2])
 
         for i in range(self.num_cars):
             cars.append(Car(0, y, NNDriver(nn)))
@@ -121,7 +133,7 @@ class GenerationController:
         return cars
 
 
-def create_traffic(num_traffic, road):
+def create_traffic_1(num_traffic, road):
     traffic = []
     x = 100
     for i in range(num_traffic):
@@ -171,21 +183,42 @@ def create_traffic_4(num_traffic, road):
     return traffic
 
 
+def load_traffic(file_name):
+    with open(file_name, "rb") as f:
+        traffic = pickle.load(f)
+
+    return traffic
+
+
 def load_traffic_1():
-    with open("traffic1.pickle", "rb") as f:
+    with open("cascade_up_traffic.pickle", "rb") as f:
         t = pickle.load(f)
 
     return t
 
 
 def load_traffic_2():
-    with open("traffic2.pickle", "rb") as f:
+    with open("cascade_down_traffic.pickle", "rb") as f:
+        t = pickle.load(f)
+
+    return t
+
+
+def load_traffic_3():
+    with open("random_traffic_1.pickle", "rb") as f:
+        t = pickle.load(f)
+
+    return t
+
+
+def load_traffic_4():
+    with open("random_traffic_2.pickle", "rb") as f:
         t = pickle.load(f)
 
     return t
 
 
 if __name__ == "__main__":
-    t = create_traffic(10, Road())
-    with open("traffic2.pickle", "wb") as f:
+    t = create_traffic_4(10, Road())
+    with open("random_traffic_2.pickle", "wb") as f:
         pickle.dump(t, f)

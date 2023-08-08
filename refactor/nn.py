@@ -5,11 +5,11 @@ from utils import mutate_value
 
 
 class WLT:
-    def __init__(self, wts=None, hi_t=None, lo_t=None):
+    def __init__(self, num_inputs=len(SENSOR_ANGLES), wts=None, hi_t=None, lo_t=None):
         if wts is not None:
             self.wts = wts
         else:
-            self.wts = [random.random() * 2 - 1 for i in range(len(SENSOR_ANGLES))]
+            self.wts = [random.random() * 2 - 1 for i in range(num_inputs)]
         if hi_t is not None:
             self.hi_t = hi_t
         else:
@@ -41,7 +41,7 @@ class WLT:
         wts = [mutate_value(w, max_perturb) for w in self.wts]
         m_hi = mutate_value(self.hi_t, max_perturb)
         m_lo = mutate_value(self.lo_t, max_perturb)
-        return WLT(wts, m_hi, m_lo)
+        return WLT(num_inputs=len(self.wts), wts=wts, hi_t=m_hi, lo_t=m_lo)
 
 
 class Level:
@@ -77,3 +77,15 @@ class NeuralNetwork:
     def mutate(self, max_perturb=1):
         level_arr = [lv.mutate(max_perturb) for lv in self.level_arr]
         return NeuralNetwork(level_arr)
+
+
+def create_nn(lv_sizes):
+    lvs = []
+    num_inputs = len(SENSOR_ANGLES)
+    for s in lv_sizes:
+        wlt_arr = [WLT(num_inputs=num_inputs) for i in range(s)]
+        lv = Level(wlt_arr=wlt_arr)
+        lvs.append(lv)
+        num_inputs = s
+
+    return NeuralNetwork(lvs)
