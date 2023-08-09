@@ -76,7 +76,7 @@ class GenerationController:
             self.universe = self.get_new_universe(self.universe, self.traffic_pattern,
                                                   self.nn_file)
 
-            if self.gen_no > self.num_gens:
+            if self.gen_no >= self.num_gens:
                 self.running = False
 
     def get_new_universe(self, curr_universe, traffic_pattern, nn_file):
@@ -100,15 +100,15 @@ class GenerationController:
     def setup_universe(self, universe, cars, traffic_pattern):
         universe.cars.extend(cars)
         if traffic_pattern == 2:
-            traffic = load_traffic("cascade_down_traffic.pickle")
+            traffic = load_traffic("savedata\\cascade_down_traffic.pickle")
         elif traffic_pattern == 3:
-            traffic = load_traffic("diamond_traffic.pickle")
+            traffic = load_traffic("savedata\\diamond_traffic.pickle")
         elif traffic_pattern == 4:
-            traffic = load_traffic("random_traffic_1.pickle")
+            traffic = load_traffic("savedata\\random_traffic_1.pickle")
         elif traffic_pattern == 5:
-            traffic = load_traffic("random_traffic_2.pickle")
+            traffic = load_traffic("savedata\\random_traffic_2.pickle")
         else:
-            traffic = load_traffic("cascade_up_traffic.pickle")
+            traffic = load_traffic("savedata\\cascade_up_traffic.pickle")
 
         universe.cars.extend(traffic)
         universe.primary_car = cars[0]
@@ -191,28 +191,28 @@ def load_traffic(file_name):
 
 
 def load_traffic_1():
-    with open("cascade_up_traffic.pickle", "rb") as f:
+    with open("savedata\\cascade_up_traffic.pickle", "rb") as f:
         t = pickle.load(f)
 
     return t
 
 
 def load_traffic_2():
-    with open("cascade_down_traffic.pickle", "rb") as f:
+    with open("savedata\\cascade_down_traffic.pickle", "rb") as f:
         t = pickle.load(f)
 
     return t
 
 
 def load_traffic_3():
-    with open("random_traffic_1.pickle", "rb") as f:
+    with open("savedata\\random_traffic_1.pickle", "rb") as f:
         t = pickle.load(f)
 
     return t
 
 
 def load_traffic_4():
-    with open("random_traffic_2.pickle", "rb") as f:
+    with open("savedata\\random_traffic_2.pickle", "rb") as f:
         t = pickle.load(f)
 
     return t
@@ -220,5 +220,5 @@ def load_traffic_4():
 
 if __name__ == "__main__":
     t = create_traffic_4(10, Road())
-    with open("random_traffic_2.pickle", "wb") as f:
+    with open("savedata\\random_traffic_2.pickle", "wb") as f:
         pickle.dump(t, f)
