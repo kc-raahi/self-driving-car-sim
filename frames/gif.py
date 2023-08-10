@@ -6,7 +6,7 @@ if __name__ == "__main__":
     frames = []
     frames5 = []
     frames10 = []
-    imgs = glob.glob("*.png")[200:500]
+    imgs = glob.glob("*.png")[500:800]
     i = 0
     for img in imgs:
         frame = Image.open(img)
