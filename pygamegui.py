@@ -40,8 +40,8 @@ class PygameGui:
         Draws the road and every car, both belonging to the GUI's controller's universe.
         """
         # frame = self.controller.universe.frame
-        # path = f"frames\\screenshot00{frame}.png" if frame < 10 else \
-        #     f"frames\\screenshot0{frame}.png" if frame < 100 else f"frames\\screenshot{frame}.png"
+        # path = f"frames/screenshot00{frame}.png" if frame < 10 else \
+        #     f"frames/screenshot0{frame}.png" if frame < 100 else f"frames/screenshot{frame}.png"
         # pygame.image.save(self.screen, path)
         self.draw_road(self.controller.universe.road)
         self.draw_cars(self.controller.universe.cars)
