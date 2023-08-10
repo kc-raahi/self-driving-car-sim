@@ -1,5 +1,4 @@
-Self-Driving Car Simulation
-===========================
+## Self-Driving Car Using Neural Networks and Genetic Algorithms
 
 ![gif](frames/animated3.gif)
 
@@ -21,6 +20,7 @@ or generate one randomly.
 * pickle
 ### Technologies used:
 * Neural Network
+* Genetic Algorithm
 * Sensors
 ### Acknowledgements: 
 * [Radu's JS Self-Driving Car Course](https://www.youtube.com/watch?v=Rs_rAxEsAvI)
