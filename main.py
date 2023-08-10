@@ -13,10 +13,7 @@ if __name__ == "__main__":
     the universe ends (program goes through the specified # of generations or the 'q' key is pressed).
     """
 
-    parser = argparse.ArgumentParser(prog="Self-Driving Car Simulation",
-                                     description="Give a number of generations, number of drivers, which neural "
-                                                 "network to use, and either a traffic configuration "
-                                                 "or number of cars and a pattern")
+    parser = argparse.ArgumentParser(prog="python main.py")
     parser.add_argument('-g', '--generations', type=int, help="Number of generations the program goes through")
     parser.add_argument('-d', '--drivers', type=int, help="Number of cars navigating through the traffic")
     parser.add_argument('-n', '--nn', type=str, help="Neural network .pickle file to use")
