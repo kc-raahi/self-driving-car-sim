@@ -25,6 +25,9 @@ class Road:
             x += self.marker_interval
 
     def get_lines(self):
+        """
+        Calculates the bottom and top lines of the road, and then adds in the lane markers, calculated in __init__.
+        """
         lines = []
         bottom_line = (Pt(self.left_x, self.bottom_line_y), Pt(self.left_x + self.length, self.bottom_line_y))
         top_line = (Pt(self.left_x, self.top_line_y), Pt(self.left_x + self.length, self.top_line_y))
@@ -35,7 +38,6 @@ class Road:
 
         lines.append(bottom_line)
         lines.append(top_line)
-        # print(lines[0])
         return lines
 
     def get_lane_center(self, lane_index):

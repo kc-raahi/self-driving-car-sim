@@ -2,7 +2,6 @@ import pygame
 from constants import *
 from geometry import Pt
 
-
 class PygameGui:
     """
     Contains all Pygame/Drawing functionality.
@@ -15,7 +14,7 @@ class PygameGui:
 
     def update(self):
         """
-        Updates car movement. Pause/Resume/Step mode functionality
+        Updates car and road movement. Pause/Resume/Step mode functionality.
         """
         self.clock.tick(60)
         events = pygame.event.get()
@@ -37,10 +36,20 @@ class PygameGui:
         pygame.display.update()
 
     def draw(self):
+        """
+        Draws the road and every car, both belonging to the GUI's controller's universe.
+        """
+        # frame = self.controller.universe.frame
+        # path = f"frames\\screenshot00{frame}.png" if frame < 10 else \
+        #     f"frames\\screenshot0{frame}.png" if frame < 100 else f"frames\\screenshot{frame}.png"
+        # pygame.image.save(self.screen, path)
         self.draw_road(self.controller.universe.road)
         self.draw_cars(self.controller.universe.cars)
 
     def draw_cars(self, cars):
+        """
+        draw the cars of the universe. For the primary car, draw the sensors.
+        """
         pc = self.controller.universe.primary_car
         for car in cars:
             if car != pc:
@@ -51,12 +60,14 @@ class PygameGui:
             self.draw_sensors(pc)
 
     def draw_outline_car(self, car):
+        # Draws an extra white outline around each car for clarity.
         color = car.get_color()
         corners = car.get_corners()
         self.fill_rect(corners, color)
         self.draw_rect(corners, 1, CAR_OUTLINE_COLOR)
 
     def draw_sensors(self, car):
+        # Draws calculated sensors for primary car.
         car_center = Pt(car.x, car.y)
         for s in car.sensors:
             if s.intersection is None:

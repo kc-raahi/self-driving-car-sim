@@ -104,7 +104,7 @@ def vertical_line_intersection(line, v_line):
 
 
 def line_segment_intersection(line, h_or_v_line):
-    # check if h_or_v_line is horizontal or vertical
+    # Check if h_or_v_line is horizontal or vertical. Use helper methods to proceed.
     p1, p2 = h_or_v_line
     if approx_equal(p1.y, p2.y):
         # is horizontal

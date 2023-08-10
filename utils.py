@@ -9,6 +9,7 @@ def deg_to_rad(theta):
 
 
 def clamp(x, x_min, x_max):
+    # tops or bottoms out a given value if necessary
     if x < x_min:
         x = x_min
     elif x > x_max:
@@ -22,6 +23,9 @@ def approx_equal(a, b):
 
 
 def mutate_value(val, max_perturb, min_val=-1, max_val=1):
+    """
+    Returns a value in the range of val +- any fraction of the max perturbation value.
+    """
     sign = random.choice([-1, 1])
     min_allowed = val - (val - min_val) * max_perturb
     max_allowed = val + (max_val - val) * max_perturb

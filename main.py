@@ -8,6 +8,10 @@ random.seed(30)
 
 # args: generations, drivers, traffic, which nn is in use, traffic config
 if __name__ == "__main__":
+    """
+    Instantiates the "universe" in which the highway exists. Updates the universe and the GUI frame by frame until 
+    the universe ends (program goes through the specified # of generations or the 'q' key is pressed).
+    """
 
     parser = argparse.ArgumentParser(prog="Self-Driving Car Simulation",
                                      description="Give a number of generations, number of drivers, which neural "

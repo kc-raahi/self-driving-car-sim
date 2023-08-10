@@ -28,6 +28,7 @@ class WLT:
         return f"{self.lo_t, self.hi_t, self.wts}"
 
     def feed_fwd(self, inputs):
+        # Takes inputs and returns one of three values (-1, 0, 1) based on the two thresholds of the output node.
         weighted_sum, sum_weights = 0, 0
         for i, o in enumerate(inputs):
             weighted_sum += o * self.wts[i]
@@ -38,6 +39,9 @@ class WLT:
         return v
 
     def mutate(self, max_perturb=1):
+        """
+        Mutates the weights feeding into one output node.
+        """
         wts = [mutate_value(w, max_perturb) for w in self.wts]
         m_hi = mutate_value(self.hi_t, max_perturb)
         m_lo = mutate_value(self.lo_t, max_perturb)
@@ -52,9 +56,11 @@ class Level:
         return f"{self.wlt_arr}"
 
     def feed_fwd(self, inputs):
+        # returns output values for each output node.
         return [w.feed_fwd(inputs) for w in self.wlt_arr]
 
     def mutate(self, max_perturb=1):
+        # Mutates the weights going into all output nodes of a given level.
         wlt_arr = [w.mutate(max_perturb) for w in self.wlt_arr]
         return Level(wlt_arr)
 
@@ -69,12 +75,14 @@ class NeuralNetwork:
             s += lv + "\n"
 
     def feed_fwd(self, inputs):
+        # Returns output values for the neural network overall.
         curr_inputs = inputs
         for level in self.level_arr:
             curr_inputs = level.feed_fwd(curr_inputs)
         return curr_inputs
 
     def mutate(self, max_perturb=1):
+        # Mutates the weights going into all output nodes of a given neural network.
         level_arr = [lv.mutate(max_perturb) for lv in self.level_arr]
         return NeuralNetwork(level_arr)
 

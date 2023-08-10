@@ -84,8 +84,8 @@ class GenerationController:
         Creates the universe object for the next generation once the current generation comes to an end.
         :param curr_universe: Contains info about the best neural network and traffic pattern to carry into the next
         gen.
-        :param traffic_pattern:
-        :param nn_file:
+        :param traffic_pattern: number corresponding to a traffic configuration (info in -h).
+        :param nn_file: optional specification of which .pickle file containing a neural network the program should use.
         return: Universe object for the next generation
         """
         self.max_perturb *= 0.95
@@ -98,6 +98,12 @@ class GenerationController:
         return self.setup_universe(universe, cars, traffic_pattern)
 
     def setup_universe(self, universe, cars, traffic_pattern):
+        """
+        For each generation, takes newly generated cars and the specified traffic pattern to place on the road.
+        :param universe: the current universe.
+        :param cars: generated in a previous add_cars call.
+        :param traffic_pattern: specified in -h
+        """
         universe.cars.extend(cars)
         if traffic_pattern == 2:
             traffic = load_traffic("savedata\\cascade_down_traffic.pickle")
@@ -115,6 +121,12 @@ class GenerationController:
         return universe
 
     def add_cars(self, universe, nn_file, primary_car=None):
+        """
+        Creates new cars for each new generation.
+        Creates the first car using an existing saved neural network or a random one.
+        Creates the remaining cars based on the first neural network and a perturbation value
+        (1: completely random; 0: exactly the same) that gradually decreases every generation.
+        """
         cars = []
         y = universe.road.get_lane_center(int(NUM_LANES / 2))
         if primary_car is not None:
@@ -134,6 +146,7 @@ class GenerationController:
 
 
 def create_traffic_1(num_traffic, road):
+    # Upward cascading pattern
     traffic = []
     x = 100
     for i in range(num_traffic):
@@ -144,6 +157,7 @@ def create_traffic_1(num_traffic, road):
 
 
 def create_traffic_2(num_traffic, road):
+    # Downward cascading pattern
     traffic = []
     x = 100
     for i in range(num_traffic):
@@ -155,6 +169,7 @@ def create_traffic_2(num_traffic, road):
 
 
 def create_traffic_3(num_traffic, road):
+    # Alternating 1-2 pattern
     traffic = []
     x = 100
     for i in range(num_traffic):
@@ -173,6 +188,7 @@ def create_traffic_3(num_traffic, road):
 
 
 def create_traffic_4(num_traffic, road):
+    # Random traffic Pattern
     traffic = []
     x = 100
     for i in range(num_traffic):

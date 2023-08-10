@@ -42,6 +42,13 @@ class Car:
         self.damaged = False
 
     def step(self):
+        """
+        Updates an individual car's position on the road.
+        Checks if the car is damaged (no movement allowed if so).
+        Changes the position of the car according to its acceleration (speeding up/slowing down)
+        and angular acceleration (turning).
+        Updates sensor positions.
+        """
         if self.damaged:
             return
         acc, ang_acc = self.driver.drive(self)

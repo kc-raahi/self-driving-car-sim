@@ -18,6 +18,10 @@ class Universe:
 
 
     def step(self):
+        """
+        Loops through every car in the universe and updates its position. Updates the frame count for the time limit.
+
+        """
         for car in self.cars:
             car.step()
 
@@ -27,11 +31,18 @@ class Universe:
         self.update_sensors_and_damage()
 
     def find_primary_car(self):
+        """
+        Car that is farthest ahead on the screen.
+        """
         return max([c for c in self.cars if not c.traffic], key=lambda c: c.x)
 
     def is_done(self):
         """
         Checks if current generation should end for the next generation to begin.
+        Checks whether all cars in the universe have crashed.
+        Checks if a driving car has passed all the traffic cars
+        (saves this car's neural network to a .pickle file if so).
+        Checks whether a minute has passed (in frames).
         """
         if self.all_cars_crashed():
             return True
@@ -57,6 +68,11 @@ class Universe:
         return False
 
     def update_sensors_and_damage(self):
+        """
+        Calculates the traffic that is within a sensor's distance of each driving car and assesses whether any of the
+        car's sensors are detecting the traffic.
+        Checks if the driving cars have collided with any of the traffic cars.
+        """
         for car in self.cars:
             if car.traffic or car.damaged:
                 continue
@@ -66,13 +82,18 @@ class Universe:
             self.update_car_damage(car, lines)
 
     def update_car_sensors(self, car, lines):
-
+        """
+        Gathers info for the sensors to be drawn.
+        """
         for s in car.sensors:
             p = Pt(car.x, car.y)
             sensor_line = (p, s.current_endpoint)
             self.update_single_sensor(s, p, sensor_line, lines)
 
     def get_relevant_lines_for_car(self, car, relevant_traffic):
+        """
+        Uses the road borders and edges of nearby traffic cars to update sensor readings.
+        """
         lines = self.get_traffic_lines(relevant_traffic)
         low_line, high_line = self.get_road_lines(car)
         lines.append(high_line)
@@ -87,6 +108,7 @@ class Universe:
         return (Pt(low_x, low_y), Pt(high_x, low_y)), (Pt(low_x, high_y), Pt(high_x, high_y))
 
     def get_traffic_lines(self, relevant_traffic):
+        # Returns the borders of every traffic car near the primary car.
         lines = []
         for t in relevant_traffic:
             [c1, c2, c3, c4] = t.get_corners()
@@ -97,6 +119,7 @@ class Universe:
         return lines
 
     def update_single_sensor(self, s, car_center, sensor_line, lines):
+        # Only draws the sensor up to its intersection with another object.
         closest_intersection = None
         final_dist = math.inf
         for line in lines:
@@ -110,6 +133,9 @@ class Universe:
         s.offset = 1 - (final_dist / SENSOR_LENGTH) if closest_intersection is not None else 0
 
     def update_car_damage(self, car, lines):
+        """
+        Checks for intersections between the car borders and either edge of the road, as well as with any traffic cars.
+        """
         [c1, c2, c3, c4] = car.get_corners()
         driver_lines = [(c1, c2), (c2, c3), (c3, c4), (c4, c1)]
 
