@@ -133,7 +133,7 @@ class GenerationController:
             nn = primary_car.driver.nn
         else:
             if nn_file != "":
-                with open(nn_file, "rb") as f:
+                with open("savedata\\" + nn_file, "rb") as f:
                     nn = pickle.load(f)
             else:
                 nn = create_nn([4, 2])
