@@ -52,7 +52,7 @@ class Universe:
         pc_ahead, num_traffic_ahead = self.primary_car_ahead_of_all_traffic()
 
         if pc_ahead:
-            with open("savedata/nn_trained.pickle", "wb") as f:
+            with open("savedata/nn.pickle", "wb") as f:
                 pickle.dump(self.primary_car.driver.nn, f)
             return True
         if num_traffic_ahead == self.traffic_ahead_of_pc:

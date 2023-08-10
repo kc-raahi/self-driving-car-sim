@@ -105,16 +105,7 @@ class GenerationController:
         :param traffic_pattern: specified in -h
         """
         universe.cars.extend(cars)
-        if traffic_pattern == 2:
-            traffic = load_traffic("savedata/cascade_down_traffic.pickle")
-        elif traffic_pattern == 3:
-            traffic = load_traffic("savedata/diamond_traffic.pickle")
-        elif traffic_pattern == 4:
-            traffic = load_traffic("savedata/random_traffic_1.pickle")
-        elif traffic_pattern == 5:
-            traffic = load_traffic("savedata/random_traffic_2.pickle")
-        else:
-            traffic = load_traffic("savedata/cascade_up_traffic.pickle")
+        traffic = load_traffic(traffic_pattern)
 
         universe.cars.extend(traffic)
         universe.primary_car = cars[0]
@@ -133,7 +124,7 @@ class GenerationController:
             nn = primary_car.driver.nn
         else:
             if nn_file != "":
-                with open("savedata/" + nn_file, "rb") as f:
+                with open(nn_file, "rb") as f:
                     nn = pickle.load(f)
             else:
                 nn = create_nn([4, 2])

@@ -32,7 +32,7 @@ libraries
 The ideas in this project were inspired by the following course:
 [Radu's JS Self-Driving Car Course](https://www.youtube.com/watch?v=Rs_rAxEsAvI)
 ### Conclusions:
-The file `savedata/nn.pickle` contains a neural network that was trained 
+The file `savedata/nn_trained.pickle` contains a neural network that was trained 
 on three regular traffic patterns: an upward cascade, a downward 
 cascade and a 1-2 pattern. It can successfully negotiate these 
 traffic patterns; in addition, it can also negotiate the two 
