@@ -1,7 +1,7 @@
 Self-Driving Car Simulation
 ===========================
 
-![gif](frames\animated3.gif)
+![gif](frames/animated3.gif)
 
 ### What this is:
 This is a simulation of "driving" (blue) cars navigating 
