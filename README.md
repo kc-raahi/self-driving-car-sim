@@ -21,6 +21,7 @@ select the best car for the next generation.
 * Run `python -r requirements.txt` to install the required 
 libraries
 * Run `python main.py`
+* To see other options, run `python main.py -h`
 
 ### Libraries used:
 * Pygame
