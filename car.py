@@ -40,6 +40,7 @@ class Car:
             Sensor(angle) for angle in SENSOR_ANGLES
         ]
         self.damaged = False
+        self.primary = False
 
     def step(self):
         """
@@ -49,6 +50,7 @@ class Car:
         and angular acceleration (turning).
         Updates sensor positions.
         """
+        self.primary = False
         if self.damaged:
             return
         acc, ang_acc = self.driver.drive(self)
@@ -74,4 +76,10 @@ class Car:
         if self.traffic:
             return TRAFFIC_COLOR
         else:
-            return DRIVER_COLOR
+            if self.damaged:
+                return DRIVER_DAMAGED_COLOR
+            else:
+                if self.primary:
+                    return DRIVER_COLOR
+                else:
+                    return DRIVER_SECONDARY_COLOR

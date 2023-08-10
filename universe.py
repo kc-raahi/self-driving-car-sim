@@ -34,7 +34,9 @@ class Universe:
         """
         Car that is farthest ahead on the screen.
         """
-        return max([c for c in self.cars if not c.traffic], key=lambda c: c.x)
+        pc = max([c for c in self.cars if not c.traffic], key=lambda c: c.x)
+        pc.primary = True
+        return pc
 
     def is_done(self):
         """
