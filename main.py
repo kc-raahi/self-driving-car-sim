@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     g = args.generations if args.generations is not None else 100
     d = args.drivers if args.drivers is not None else 100
-    p = args.traffic_pattern if args.traffic_pattern is not None else "savedata/cascade_up.pickle"
+    p = args.traffic_pattern if args.traffic_pattern is not None else "savedata/cascade_up_traffic.pickle"
     n = args.nn if args.nn is not None else ""
 
     controller = GenerationController(g, d, p, n)
